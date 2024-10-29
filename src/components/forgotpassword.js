@@ -63,7 +63,7 @@ const handleSendOtp = async (e) => {
   const payload = { email };
   try {
     console.log('Sending payload:', JSON.stringify(payload));
-    const response = await fetch('http://192.168.1.4:8081/api/auth/forgot-password', {
+    const response = await fetch('http://localhost:8081/api/auth/forgot-password', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -109,7 +109,7 @@ const handleVerifyOtp = async (e) => {
 
   try {
     console.log('Sending data:', JSON.stringify(payload));
-    const response = await fetch('http://192.168.1.4:8081/api/auth/reset-password', {
+    const response = await fetch('http://localhost:8081/api/auth/reset-password', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

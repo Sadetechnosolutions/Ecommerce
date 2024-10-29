@@ -27,6 +27,9 @@ const Signin = () => {
     const [seconds, setSeconds] = useState(300)
     const [error,setError] = useState('')
     const navigate = useNavigate()
+
+    const SECRET_KEY = process.env.REACT_APP_SECRET_KEY;
+
     const handleChange = (e) => {
         const { name, value } = e.target;
           setUser({ ...user, [name]: value });
@@ -104,7 +107,7 @@ const Signin = () => {
      const fetchUserdata = async () => {
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch('http://192.168.1.4:8080/api/users', {
+        const response = await fetch('http://localhost:8080/api/users', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -136,7 +139,7 @@ const Signin = () => {
         try {
           console.log('Sending payload:', JSON.stringify(payload));
           // Send the OTP request
-          const response = await fetch('http://192.168.1.4:8081/api/auth/forgot-password', {
+          const response = await fetch('http://localhost:8081/api/auth/forgot-password', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -170,7 +173,6 @@ const Signin = () => {
       
       const handleSubmit = async (e) => {
         e.preventDefault(); // Prevent default form submission
-      
         // Validate user input
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       
@@ -188,7 +190,7 @@ const Signin = () => {
       
         try {
           console.log(user);
-          const response = await fetch('http://192.168.1.4:8081/api/auth/login', {
+          const response = await fetch('http://localhost:8081/api/auth/login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -258,7 +260,7 @@ const Signin = () => {
       };
     try {
       console.log('Sending data:', JSON.stringify(payload));
-      const response = await fetch('http://192.168.1.4:8081/api/auth/login-with-otp', {
+      const response = await fetch('http://localhost:8081/api/auth/login-with-otp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

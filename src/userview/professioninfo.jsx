@@ -34,7 +34,7 @@ const ProfessionalInfo = () => {
         e.preventDefault();
         try {
             console.log(formData);
-            const response = await fetch('http://192.168.1.4:3000/auth/register', {
+            const response = await fetch('http://localhost:3000/auth/register', {
                 method: 'POST',
                 body: JSON.stringify(formData),
                 headers: {

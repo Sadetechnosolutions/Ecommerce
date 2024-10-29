@@ -120,7 +120,7 @@ const handleSubmit = async (event) => {
     }
 
     try {
-        const response = await fetch('http://192.168.1.4:8082/api/users/createUserWithImages', {
+        const response = await fetch('http://localhost:8082/api/users/createUserWithImages', {
             method: 'POST',
             body: formDataObj,
         });

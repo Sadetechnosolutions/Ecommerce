@@ -9,11 +9,9 @@ import PostVideo from '../components/uploadvideo';
 import Uploadvideofolder from '../components/uploadvideofolder';
 import { IoClose } from 'react-icons/io5';
 import Createvideoalbum from '../components/createvideoalbum';
-import { selectVideo } from '../slices/videoslice';
 import { Link } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import { selectPost } from '../slices/postslice';
-
 
 const Videos = () => {
   const [uploadVideo, showuploadVideo] = useState(false);
@@ -25,13 +23,6 @@ const Videos = () => {
   const { userID } = useParams();
   const [videos,setVideos] = useState();
   const [file,setFile] = useState(null)
-
-  const selectedVideo = (event) => {
-    const file = event.target.files[0];
-    const fileObject = { name: file.name };
-    dispatch(selectVideo(fileObject));
-    openPostVideo();
-};
 
   const openCreateAlbum = ()=>{
     showCreateAlbum(true);
@@ -68,7 +59,7 @@ const Videos = () => {
         console.error('No token found in localStorage');
         return;
                 }
-                const response = await fetch(`http://192.168.1.4:8080/posts/user/${userID}/videos`, {
+                const response = await fetch(`http://localhost:8080/posts/user/${userID}/videos`, {
         method: 'GET',
       headers: {
     'Authorization': `Bearer ${token}`,
@@ -84,6 +75,7 @@ const Videos = () => {
         console.error('Error fetching user Image:', error);
       }
             };
+
 
       useEffect(() => {
         if (userId) {
@@ -210,7 +202,7 @@ const handleImageChange = (event) => {
           </div> }
            {videos?.slice().reverse().map((video)=>(
             <div key={video.postId}>
-                <Link to={`/videos/${video.postId}`}>
+                <Link to={`/post/${userID}/${video.postId}`}>
                 <div className='w-28 h-28 bg-black rounded-md overflow-hidden'>
     <ReactPlayer
               url={video.videoUrl} // Replace with your video URL

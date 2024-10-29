@@ -37,7 +37,7 @@ const fetchUserName = async () => {
         return;
       }
   
-      const response = await fetch(`http://192.168.1.4:8080/api/users/${userId}`, {
+      const response = await fetch(`http://localhost:8080/api/users/${userId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -63,7 +63,7 @@ const fetchUserName = async () => {
     return(
         <div className="w-max-[30rem] w-full flex h-screen flex-col gap-2 bg-gray-200  p-4">
         <NavLink to={ `/user/${userId}`}><div className='flex items-center p-4 bg-white rounded-md gap-4'>
-        <img src={`http://192.168.1.4:8086${user?.profileImagePath}`} data-tooltip-id="my-tooltip" data-tooltip-content="Profile" alt='' className='cursor-pointer rounded-full h-11 w-11 bg-gray-300'/>
+        <img src={`http://localhost:8086${user?.profileImagePath}`} data-tooltip-id="my-tooltip" data-tooltip-content="Profile" alt='' className='cursor-pointer rounded-full h-11 w-11 bg-gray-300'/>
       <p data-tip="Profile" className=' w-28 truncate font-semibold'>{user?.name}</p> 
       </div></NavLink>
 

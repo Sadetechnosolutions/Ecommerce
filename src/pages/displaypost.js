@@ -7,8 +7,9 @@ import moment from "moment";
 import Modal from 'react-modal';
 import axios from 'axios';
 import { NavLink } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
-const Post = () => {
+const DisplayPost = () => {
   const [comment, setComment] = useState(null);
   const [edit, setEdit] = useState(false);
   const [saved, setSaved] = useState({});
@@ -17,7 +18,7 @@ const Post = () => {
   const [showDropdown, setShowDropdown] = useState(null); // Manage dropdown visibility
   const [commentdropdown,setCommentDropdown] = useState(null);
   const dispatch = useDispatch();
-  const [userData, setUserData] = useState([]);
+  const [post, setPost] = useState([]);
   const userId = useSelector((state) => state.auth.userId);
   const [user, setUser] = useState();
   const [deletePopup,setDeletePopup] = useState(false)
@@ -40,6 +41,7 @@ const Post = () => {
   const [likedBy,setLikedBy] = useState(null);
   const [file,setFile] = useState()
   const {selectedphotocomment} = useSelector((state)=>state.photo)
+  const {postID} = useParams();
 
   const showLikedBy = (id)=>{
     setLikedBy(id)
@@ -200,7 +202,7 @@ const Post = () => {
         console.error('No token found in localStorage');
         return;
       }
-      const response = await fetch(`http://localhost:8080/posts`, {
+      const response = await fetch(`http://localhost:8080/posts/${postID}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -208,7 +210,7 @@ const Post = () => {
       });
       if (response.ok) {
         const data = await response.json();
-        setUserData(data.slice().reverse());
+        setPost(data);
       } else {
         console.error('Failed to fetch user data:', response.status);
       }
@@ -224,20 +226,20 @@ const Post = () => {
   }, [userId]);
 
   useEffect(() => {
-    if (userData.length && user.length) {
+    if (post.length && user.length) {
         const userMap = {};
         user.forEach(user => {
             userMap[user.userid] = user.name;
         });
 
-        const updatedPosts = userData.map(post => ({
+        const updatedPosts = post.map(post => ({
             ...post,
             userName: userMap[post.userId] || 'Unknown User' // Fallback if userId not found
         }));
 
         setPostsWithUsernames(updatedPosts);
     }
-}, [userData, user]);
+}, [post, user]);
 
   // Handle saved posts
   useEffect(() => {
@@ -403,7 +405,7 @@ const Post = () => {
     const formdata = new FormData();
     formdata.append('file',selectedphotocomment?.name)
     const jsonData = {
-      postId: selectedPostId,
+      postId: postID,
       parentId: replyId,
       repliedToUserId: parentComment ? parentComment.userId : '',
       userId: userId,
@@ -433,7 +435,6 @@ const Post = () => {
     } catch (error) {
       console.error('Error submitting form:', error);
       setPostComment('');
-      userId();
       setSelectedPostId('');
       setReplyId('');
       dispatch(selectPhotoComment(null))
@@ -441,17 +442,16 @@ const Post = () => {
   };
 
   useEffect(() => {
-    if (userData.length > 0) {
-      userData.forEach(post => {
+    if (post.length > 0) {
+
         if (post.postId) {
           fetchComments(post.postId); // Fetch comments for each post
           fetchLikes(post.postId); // Fetch likes for each post
           likesCount(post.postId);
           fetchLikedBy(post.postId); // Fetch like counts for each post
         }
-      });
     }
-  }, [userData]);
+  }, [post]);
 
   const fetchComments = async (postId) => {
     try {
@@ -460,7 +460,7 @@ const Post = () => {
         throw new Error('No token found in localStorage');
       }
   
-      const response = await fetch(`http://localhost:8080/comments/post/${postId}`, {
+      const response = await fetch(`http://localhost:8085/comments/post/${postId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -546,15 +546,15 @@ const Post = () => {
   };
 
   useEffect(() => {
-    if (userData.length > 0) {
-      userData.forEach(post => {
+    if (post.length > 0) {
+  
         if (post.postId) {
           fetchComments(post.postId); // Fetch comments for each post
           likesCount(post.postId); // Fetch like counts for each post
         }
-      });
+
     }
-  }, [userData]);
+  }, [post]);
   const handleLike = async (postId) => {
     await handleLikes(postId);
     await fetchLikes(postId); // Re-fetch to update like state
@@ -562,58 +562,53 @@ const Post = () => {
     await fetchLikedBy(postId) // Fetch and set like count for the specific post
   };
 
+  useEffect(()=>{
+  fetchLikes(postID)
+  likesCount(postID)
+  },[])
+
   useEffect(() => {
-    if (userData) {
-      userData.forEach(post => {
+    if (post){
+   
         if (post.postId) {
           fetchComments(post.postId); // Fetch comments for each post
         }
-      });
+
     }
-  }, [userData]);
+  }, [post]);
 
   
+  const calculateTimeDifference = () => {
+    const pastDate = moment(post.createdAt);
+    const now = moment();
+
+    const diffInDays = now.diff(pastDate, 'days');
+    const diffInHours = now.diff(pastDate, 'hours');
+    const diffInMinutes = now.diff(pastDate, 'minutes');
+
+    let displayText = '';
+
+    if (diffInDays > 0) {
+      displayText = `${diffInDays}d${diffInDays > 1 ? ' ago' : ''}`;
+    } else if (diffInHours > 0) {
+      displayText = `${diffInHours}h${diffInHours > 1 ? ' ago' : ''}`;
+    } else if (diffInMinutes > 0) {
+      displayText = `${diffInMinutes}m${diffInMinutes > 1 ? ' ago' : ''}`;
+    } else {
+      displayText = 'Just now';
+    }
+
+    return displayText;
+  };
+
+const timeDifference = calculateTimeDifference();
 
   const isLiked = (postId) => like[postId] || false;
   return (
-    <form onSubmit={handleSubmit} className="rounded-md flex flex-col bg-white gap-6 shadow-lg max-w-[30rem] w-full py-2 px-4">
-      {userData.filter(post=>post.postVisibility==='PERSONAL')?.map((post) =>{ 
-             const calculateTimeDifference = () => {
-              const pastDate = moment(post.createdAt);
-              const now = moment();
-        
-              const diffInDays = now.diff(pastDate, 'days');
-              const diffInHours = now.diff(pastDate, 'hours');
-              const diffInMinutes = now.diff(pastDate, 'minutes');
-        
-              let displayText = '';
-        
-              if (diffInDays > 0) {
-                displayText = `${diffInDays}d${diffInDays > 1 ? ' ago' : ''}`;
-              } else if (diffInHours > 0) {
-                displayText = `${diffInHours}h${diffInHours > 1 ? ' ago' : ''}`;
-              } else if (diffInMinutes > 0) {
-                displayText = `${diffInMinutes}m${diffInMinutes > 1 ? ' ago' : ''}`;
-              } else {
-                displayText = 'Just now';
-              }
-        
-              return displayText;
-            };
-        
-        const timeDifference = calculateTimeDifference();
-        return(
-          <NavLink to={`/post/${post.userId}/${post.postId}`}> <div className='w-5/3 flex flex-col gap-2 shadow-lg py-4 px-4 relative' key={post.postId}>
+    <form onSubmit={handleSubmit} className="rounded-md flex flex-col bg-white gap-6 max-w-[30rem] h-auto w-full">
+          <NavLink to={`/post/${post.userId}/${post.postId}`}> <div className='flex flex-col relative' key={post.postId}>
           <div className="flex justify-between items-center">
-            <div className="flex gap-2 items-center">
-            <NavLink to={`/user/${post.userId}`}><img className="rounded-full w-9 h-9" src={`http://localhost:8080/posts${post?.profileImagePath}`} alt="Profile" /></NavLink>
-              <div className="flex flex-col">
-                <span className="font-semibold">
-                <NavLink to={`/user/${post.userId}`}><span key={user.id} className="font-semibold">{post.name}</span></NavLink>
-       </span>
-                <span className="text-xxs text-gray-600">{timeDifference}</span>
-              </div>
-            </div>
+
 {/*       <div className="flex flex-col items-center relative">
                           <Icon
                             className="w-6 h-6 cursor-pointer"
@@ -639,7 +634,16 @@ const Post = () => {
               Your browser does not support the video tag.
             </video>
           ) : null}
-          <div className='flex items-center'>
+                      <div className="flex gap-2 items-center p-2">
+            <NavLink to={`/user/${post.userId}`}><img className="rounded-full w-9 h-9" src={`http://localhost:8080/posts${post?.profileImagePath}`} alt="Profile" /></NavLink>
+              <div className="flex flex-col">
+                <span className="font-semibold">
+                <NavLink to={`/user/${post.userId}`}><span className="font-semibold">{post.name}</span></NavLink>
+       </span>
+                <span className="text-xxs text-gray-600">{timeDifference}</span>
+              </div>
+            </div>
+          <div className='flex items-center p-2'>
           <div className='relative flex items-center'>
       <Icon
         onClick={() => handleLike(post.postId)}
@@ -686,7 +690,7 @@ style={{
                 .map((client) => (
                   <div className='flex items-center justify-between'>
                   <span className='flex items-center gap-4 mb-4' key={client.id}>
-                    <div className='relative p-1'><img className='w-9 h-9 rounded-full' src={ `http://localhost:8080/posts${client.profileImagePath}` } alt={client.profileImagePath}  />      <Icon   className='text-red absolute bottom-0' 
+                    <div className='relative p-1'><img className='w-9 h-9 rounded-full' src={ `http://localhost:8082${client.profileImagePath}` } alt={client.profileImagePath}  />      <Icon   className='text-red absolute bottom-0' 
         icon="material-symbols-light:favorite"
         width='1em'
         height='1em'
@@ -724,9 +728,10 @@ style={{
     <div className='flex items-center gap-1'><Icon onClick={() => toggleComment(post.postId)} className="cursor-pointer h-6 w-6 text-gray-600" icon="iconamoon:comment-light" /> { <span>{displayComments[post.postId]?.length}</span> || 0 }</div>
           </div>
 
-          {comment === post.postId && (   <div className="flex items-center gap-2"><label className="cursor-pointer"><Icon className="w-6 h-5 text-gray-500" icon="mdi:camera-outline" /><input onChange={(e)=>{handleImageChange(e)}}  className="absolute opacity-0" type="file" /></label><InputEmoji onChange={(text) => setPostComment(text)} placeholder="Add a comment" /><Icon onClick={handleComment} className='text-cta cursor-pointer' icon="majesticons:send" width="1.5em" height="1.6em" strokeWidth='2' /></div>)}
+      <div className="flex fixed bg-white bottom-0 max-w-[30rem] w-full items-center gap-2 p-2"><label className="cursor-pointer"><Icon className="w-6 h-5 text-gray-500" icon="mdi:camera-outline" /><input onChange={(e)=>{handleImageChange(e)}}  className="absolute opacity-0" type="file" /></label><InputEmoji onChange={(text) => setPostComment(text)} placeholder="Add a comment" /><Icon onClick={handleComment} className='text-cta cursor-pointer' icon="majesticons:send" width="1.5em" height="1.6em" strokeWidth='2' /></div>
 {selectedphotocomment && <img className='w-28 h-28' src={selectedphotocomment?.name.name} alt={`http://localhost:8080/posts${selectedphotocomment.name}`} />}
-          {comment === post.postId && displayComments[post.postId]?(
+<div className='flex flex-col gap-4 overflow-y-auto h-[calc(50vh-100px)]'>
+          {displayComments[post.postId]?(
   displayComments[post.postId].map((comment) => {
     const commentUser = users.find(user => user.id === comment.userId);
     const commentTime = () => {
@@ -752,24 +757,25 @@ style={{
     const commenttime = commentTime();
     return(
     <div>
-<div key={comment.id} className='flex border py-2 px-4 rounded-3xl flex-col shadow-md w-full gap-2'>
-<div className='flex justify-between'>
-<div className='flex justify-between w-full items-center'>
+<div key={comment.id} className='flex  flex-col w-full gap-2'>
+<div className='flex flex-col gap-2 justify-between py-2 px-4 shadow-md rounded-3xl'>
+<div className=''>
+<div className='flex justify-between  w-full items-center'>
   <div className='flex gap-2 items-center' >
-<img className='rounded-full h-7 w-7' src={post.profilepic} alt={post.profilepic} />
+<img className='rounded-full h-7 w-7' src={`http://localhost:8085${comment.profileImagePath}`} alt={post.profilepic} />
 <div className='flex flex-col'>
 <p className='font-semibold text-xs'>{commentUser?.UserName}</p>
-<span className='text-xxs'>{commenttime}</span>
-{comment.imagePath && <img className='w-52 h-44' src={`http://localhost:8080/posts${comment.imagePath}`} />}
+<span className='text-xxxs'>{commenttime}</span>
+{comment.imagePath && <img className='w-52 h-44' src={`http://localhost:8086${comment.imagePath}`} />}
 </div>
 </div>
 <div className="flex flex-col items-center relative"> {/* Ensure dropdown menu is positioned correctly */}
-              <Icon className="w-6 h-6 cursor-pointer"
+              <Icon className="w-4 h-4 cursor-pointer"
                 icon="carbon:overflow-menu-vertical"
                 onClick={() => toggleCommentDropdown(comment.id)} // Toggle dropdown for specific post
               />
               {commentdropdown === comment.id && (
-        <div className="absolute right-0 bg-white border border-gray-300 shadow-lg rounded-md mt-6">
+        <div className="absolute right-0 bg-white text-xxs border border-gray-300 shadow-lg rounded-md mt-6">
         <button  className="block flex items-center px-3 w-full py-2 text-gray-700 hover:bg-gray-100"><Icon icon="tdesign:edit" />Edit</button>
         <button onClick={()=> {deleteComment(comment.id)}}  className="block flex items-center w-full px-3 py-2 text-gray-700 hover:bg-gray-100"><Icon icon="mdi:delete-outline" />Delete</button>
       </div>
@@ -779,8 +785,9 @@ style={{
 </div>
 
 <span className='text-sm'>{comment.textContent}</span>
+</div>
 {/* {edit ===post.commentId ? <div className='flex items-center'><InputEmoji value={post.comment} onChange={(text)=>setPostComment(text)} /><Icon  onClick={() => handleEditComment(image.id, post.commentId, postComment)} className='text-cta cursor-pointer' icon="majesticons:send" width="1.5em" height="1.6em" strokeWidth='2' /></div> : <span>{post.comment}</span>} */}
-<div className='flex items-end gap-2'>
+<div className='flex items-end px-4 gap-2'>
 {/* <Icon onClick={handleLike} className={cursor-pointer h-5 w-5 text-pink}
 icon={isClicked ? "material-symbols-light:favorite" : "material-symbols-light:favorite-outline"} width='1.2em' height='1.2em'/>  */}
 <div className='flex items-center w-full justify-between'>
@@ -806,10 +813,10 @@ icon={isClicked ? "material-symbols-light:favorite" : "material-symbols-light:fa
   )})
 ) : (
   <div className="text-gray-500"></div>
-)}
+)}</div>
 
         </div></NavLink>
-      )})}
+
               <Modal  appElement={document.getElementById('root')}
 style={{
         content: {
@@ -826,7 +833,7 @@ style={{
           border:'none'
         },}}
         isOpen={deletePopup} onRequestClose={closeDelete}>
-      <div className='relative bg-white h-36 ml-72 w-1/3 rounded-md flex rounded-lg shadow-lg flex-col items-center justify-center gap-4'>
+      <div className='relative bg-white h-36 ml-72 w-1/3 rounded-md  flex rounded-lg shadow-lg flex-col items-center justify-center gap-4'>
       <span className='text-lg font-semibold'>Are you sure you want to delete</span>
       <div className='flex w-full justify-center gap-4'><button onClick={closeDelete} className='w-16 px-2 rounded-md hover:bg-gray-100 bg-gray-200 py-1'>Cancel</button><button onClick={handleSubmit} className='w-16 px-2 bg-red text-white hover:opacity-85 rounded-md py-1'>Yes</button></div>
       <Icon onClick={closeDelete} className='absolute cursor-pointer top-2 right-2' icon="mdi:remove" />
@@ -837,5 +844,5 @@ style={{
   );
 };
 
-export default Post;
+export default DisplayPost;
 

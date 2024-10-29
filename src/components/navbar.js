@@ -24,10 +24,25 @@ const Navbar = () => {
   const [notificationCount,setNotificationCount] = useState(null)
   const [requestCount , setRequestCount] = useState(null);
   const [isSidebarOpen,setisSidebarOpen] = useState(false)
+  const [users, setUsers] = useState([]);
 
   const toggle = ()=>{
     setisSidebarOpen(!isSidebarOpen)
   }
+
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/users');
+      const data = await response.json()
+      setUsers(data);
+
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+  useEffect(() => {
+    fetchUsers();
+  }, []);
   const headers = [
     {
       id: 1, 
@@ -41,19 +56,22 @@ const Navbar = () => {
       id: 2, 
       title: 'Friend Request', 
       icon: iconPersonAdd,
-      count:requestCount
+      count:requestCount,
+      path:'/friendrequest'
     },
     {
       id: 3, 
       title: 'Notifications', 
       icon: iconNotifications, 
-      count:notificationCount
+      count:notificationCount,
+      path:'/notifications'
     },
     {
       id: 4, 
       title: 'Messages', 
       icon: iconMessageText, 
-      count:null
+      count:null,
+      path:'/messages'
     },
   ];
   const sidebarRef = useRef(null);
@@ -126,7 +144,7 @@ const fetchUserName = async () => {
       return;
     }
 
-    const response = await fetch(`http://192.168.1.4:8080/api/users/${userId}`, {
+    const response = await fetch(`http://localhost:8080/api/users/${userId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -153,7 +171,7 @@ const fetchNotification = async () => {
       console.error('No token found in localStorage');
       return;
     }
-    const response = await fetch(`http://192.168.1.4:8080/follows/notifications/${userId}`, {
+    const response = await fetch(`http://localhost:8080/follows/notifications/${userId}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -182,7 +200,7 @@ const fetchNotification = async () => {
 //       console.error('No token found in localStorage');
 //       return;
 //     }
-//     const response = await fetch(`http://192.168.1.4:8080/friend-requests/notifications/1`, {
+//     const response = await fetch(`http://localhost:8080/friend-requests/notifications/1`, {
 //       method: 'GET',
 //       headers: {
 //         'Authorization': `Bearer ${token}`,
@@ -255,7 +273,7 @@ const fetchNotification = async () => {
         console.error('No token found in localStorage');
         return;
       }
-      const response = await fetch(`http://192.168.1.4:8080/friend-requests/${userId}/pending-requests`, {
+      const response = await fetch(`http://localhost:8080/friend-requests/${userId}/pending-requests`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -283,7 +301,7 @@ const fetchNotification = async () => {
         recipientId:acceptID
       }
       try{
-        const response = await fetch(`http://192.168.1.4:8080/friend-requests/accept?senderId=${acceptID}&recipientId=${userId}`,{
+        const response = await fetch(`http://localhost:8080/friend-requests/accept?senderId=${acceptID}&recipientId=${userId}`,{
           method:'POST',
           headers:{
             'Authorization':`bearer${token}`
@@ -310,7 +328,7 @@ const fetchNotification = async () => {
         recipientId:cancelID
       }
       try{
-        const response = await fetch(`http://192.168.1.4:8080/friend-requests/decline?senderId=${cancelID}&recipientId=${userId}`,{
+        const response = await fetch(`http://localhost:8080/friend-requests/decline?senderId=${cancelID}&recipientId=${userId}`,{
           method:'POST',
           headers:{
             'Authorization':`bearer${token}`
@@ -371,7 +389,7 @@ const fetchNotification = async () => {
             <li key={header.id} className='cursor-pointer'>
               <div className="relative">
                 <NavLink to={header.path}><button
-                  onClick={() => {handleIconClick(header.id)}}
+         
                   className={`relative cursor-pointer py-2 w-7  rounded-full transition-colors duration-500 ease-in-out ${activeSection === header.id ? '' : ''}`}>
                   <span className="">
                     {React.cloneElement(header.icon, {
@@ -439,7 +457,7 @@ const fetchNotification = async () => {
                           <div className='flex justify-between items-center'>
                             <div className='flex gap-2 items-center'>
                               <div>
-                          <img className='rounded-full w-8 h-8' alt='alt' src={`http://192.168.1.4:8086${item.profileImagePath}`} />
+                          <img className='rounded-full w-8 h-8' alt='alt' src={`http://localhost:8080/posts${item.profileImagePath}`} />
                           </div>
                           <div className='flex flex-col'>
                             <div className='hover:text-cta'>{item.name}</div> 
@@ -462,19 +480,19 @@ const fetchNotification = async () => {
                 {activeSection === header.id && header.title==='Messages' && (
                   <div ref={dropdownRef} className="absolute w-inherit left-0 text-sm top-full bg-white  h-96 rounded-md slide-in-down  shadow-lg z-10 overflow-hidden">
                     <div className='flex sticky items-center  justify-between  py-2 px-4'><p>Messages</p><p className='text-read text-xs hover:underline'>Mark All As Read</p><div onClick={()=>{openMessages();closeDropdown()}} className='flex items-center justify-center text-cta hover:bg-gray-100 text-sm px-4'><p>View All</p></div></div>
-{showMessages.length<=0 && <><div className='flex items-center justify-center'><p>No Messages</p></div></>}
-{showMessages.map((item) => (
-                        <div key={item.id} className="  text-gray-800 flex flex-col hover:bg-gray-50 justify-between cursor-pointer">
-                          <div className='flex flex-col px-4 justify-center w-full  border:gray-300 py-2 border-b '>
+                    {users.length<=0 && <><div className='flex items-center justify-center'><p>No Messages</p></div></>}
+{users.map((item) => (
+                        <div key={item.id} className=" text-sm text-gray-800 flex flex-col hover:bg-gray-50 justify-between cursor-pointer">
+                          <div className='flex flex-col px-4 justify-center w-full  border:gray-300 py-3 border-b text-sm '>
                           <div className='flex justify-between items-center'>
                             <div className='flex gap-2 w-full items-center'>
                               <div>
-                          <img className='rounded-full w-8 h-8' alt='alt' src={item.img} />
+                          <img className='rounded-full w-9 h-9' alt='alt' src={item.profileImagePath} />
                           </div>
                           <div className='flex w-full flex-col'>
-                            <div className='hover:text-cta  w-min'>{item.name}</div> 
+                            <div className='hover:text-cta  w-max'>{item.name}</div> 
                             <div className='flex w-full items-center justify-between'>
-                            <div className='text-gray-400 truncate-text '>{item.message}</div>
+                            <div className='text-gray-400 truncate-text text-[12px]'>{item.message}</div>
                             <div className=' text-gray-400 text-xs'>{item.time}</div>
                             </div>
                             </div>
@@ -516,7 +534,7 @@ const fetchNotification = async () => {
         
         </div> */}
         <NavLink to='/menu' ><div className='flex items-center gap-4'>
-        <img src={`http://192.168.1.4:8086${user?.profileImagePath}`} data-tooltip-id="my-tooltip" data-tooltip-content="Profile" alt='' className='cursor-pointer rounded-full h-9 w-9 bg-gray-300'/>
+        <img src={`http://localhost:8080/posts${user?.profileImagePath}`} data-tooltip-id="my-tooltip" data-tooltip-content="Profile" alt='' className='cursor-pointer rounded-full h-9 w-9 bg-gray-300'/>
       {/* <p data-tip="Profile" className='text-white w-28 truncate font-semibold'>{user.name}</p>  */}
       </div></NavLink>
       </div>
@@ -533,7 +551,7 @@ const fetchNotification = async () => {
 <div ref={sidebarRef} className="absolute bg-white flex flex-wrap w-64 h-96 p-4 shadow-lg top-16 right-0 justify-start">
         {/* <ul className='shadow-lg p-4'>
         <NavLink to={ `/user/${userId}`}><div className='flex items-center gap-4'>
-        <img src={`http://192.168.1.4:8086${user.profileImagePath}`} data-tooltip-id="my-tooltip" data-tooltip-content="Profile" alt='' className='cursor-pointer rounded-full h-9 w-9 bg-gray-300'/>
+        <img src={`http://localhost:8086${user.profileImagePath}`} data-tooltip-id="my-tooltip" data-tooltip-content="Profile" alt='' className='cursor-pointer rounded-full h-9 w-9 bg-gray-300'/>
       <p data-tip="Profile" className=' w-28 truncate font-semibold'>{user.name}</p> 
       </div></NavLink>
         </ul> */}

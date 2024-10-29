@@ -1,16 +1,19 @@
-import React ,{useState, useEffect} from 'react'
+import React ,{useState, useEffect, useCallback} from 'react'
 import { Icon } from '@iconify/react';
 import Modal from 'react-modal';
 import {Tooltip } from 'react-tooltip';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
 
 const Profile = () => {
   const [editprofile, showEditprofile] = useState(false);
   const [editPersonal,showEditpersonal] = useState(false);
   const [user,setUserdetail] = useState('');
   const userId = useSelector((state) => state.auth.userId);
+  const {userID} = useParams();
   const navigate = useNavigate()
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -20,34 +23,16 @@ const Profile = () => {
     return `${day}-${month}-${year}`;
   };
   
-  const fetchUserName = async () => {
+  const fetchUserName = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-
-      if (!token) {
-        console.error('No token found in localStorage');
-        return;
-      }
-
-      const response = await fetch(`http://192.168.1.4:8080/api/users/${userId}`, {
+      const response = await axios.get(`http://localhost:8080/api/users/${userID}`, {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
       });
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Fetched user data:', data); // Log fetched data
-        setUserdetail(data);
-      } else {
-        console.error('Failed to fetch user data:', response.status);
-        // Optionally handle different status codes (e.g., unauthorized, not found)
-      }
+      setUserdetail(response.data);
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      console.error("Error fetching user details:", error);
     }
-  };
-
+  },[userID]);
   useEffect(() => {
     if (userId) {
       fetchUserName();

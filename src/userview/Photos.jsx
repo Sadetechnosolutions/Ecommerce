@@ -1,6 +1,5 @@
-import React, { useState,useEffect } from 'react'
+import React, { useState,useEffect, useCallback } from 'react'
 import { Icon } from '@iconify/react/dist/iconify.js'
-import { selectPhoto } from '../slices/photoslice'
 import { useDispatch,useSelector } from 'react-redux'
 import Postphoto from '../components/uploadphoto'
 import { IoClose } from "react-icons/io5";
@@ -19,9 +18,7 @@ const Photos = () => {
   const [createAlbum,showCreateAlbum] = useState(false);
   const [images,setImages] = useState()
   const [file, setFile] = useState(null);
-  const { selected } = useSelector((state) => state.post);
   const [likeCount,setLikeCount] = useState({});
-  const [userData,setUserData] = useState([]);
   const [like,setLike] = useState(false);
   
   const openCreateAlbum = ()=>{
@@ -32,7 +29,6 @@ const Photos = () => {
   const userId = useSelector((state) => state.auth.userId);
   const { userID } = useParams();
 
-  const {uploaded} = useSelector((state)=>state.photo)
   const dispatch = useDispatch();
 
   const openPostPhoto = ()=>{
@@ -44,52 +40,15 @@ const Photos = () => {
     showUploadFolder(true);
     closeuploadPhoto()
   }
-  const userIDObject = userID;
-  const fetchUserData = async () => {
+
+  const fetchLikes = useCallback(async (postId) => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
         console.error('No token found in localStorage');
         return;
       }
-
-      // Convert userID to an integer and validate
-      // Make the API request with the integer userID
-      const userIdValue = parseInt(userID, 10);
-      const response = await fetch(`http://192.168.1.4:8080/posts/user/${userIdValue}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUserData(data);
-      } else {
-        const errorText = await response.text();
-        console.error('Failed to fetch user data:', response.status, errorText);
-      }
-    } catch (error) {
-      console.error('Error fetching user data:', userID);
-    }
-  };
-
-
-  useEffect(() => {
-    if (userID) {
-      fetchUserData();
-    }
-  }, [userID]);
-
-  const fetchLikes = async (postId) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found in localStorage');
-        return;
-      }
-      const response = await fetch(`http://192.168.1.4:8080/likes/post/${postId}`, {
+      const response = await fetch(`http://localhost:8080/likes/post/${postId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -110,11 +69,10 @@ const Photos = () => {
     } catch (error) {
       console.error('Error fetching likes:', error);
     }
-  };
-
+  },[like,userId]);
   const likesCount = async (postId) => {
     try {
-      const response = await fetch(`http://192.168.1.4:8080/likes/post/${postId}/count`);
+      const response = await fetch(`http://localhost:8080/likes/post/${postId}/count`);
       if (response.ok) {
         const data = await response.json();
         setLikeCount(prevCounts => ({
@@ -127,16 +85,7 @@ const Photos = () => {
     }
   };
 
-  useEffect(() => {
-    if (userData.length > 0) {
-      userData.forEach(post => {
-        if (post.postId) {
-          fetchLikes(post.postId); // Fetch likes for each post
-          likesCount(post.postId); // Fetch like counts for each post
-        }
-      });
-    }
-  }, [userData]);
+
 
   const openuploadPhoto = () => {
     showuploadPhoto(true);
@@ -152,24 +101,15 @@ const Photos = () => {
   const closeuploadPhoto = () => {
     showuploadPhoto(false);
   };
-  const selectedPhoto = (event) => {
-      const file = event.target.files[0];
-      const fileObject = { name: file.name };
-      console.log(fileObject);
-     dispatch(selectPhoto(fileObject));
-     openPostPhoto();
-  };
 
-  const fetchImage = async () => {
-    const userIDObject = userID;
-    const userIdValue = parseInt(userIDObject.userID, 10);
+  const fetchImage = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
         console.error('No token found in localStorage');
         return;
       }
-      const response = await fetch(`http://192.168.1.4:8080/posts/user/${userID}/images`, {
+      const response = await fetch(`http://localhost:8080/posts/user/${userID}/images`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -184,13 +124,22 @@ const Photos = () => {
     } catch (error) {
       console.error('Error fetching user Image:', error);
     }
-  };
+  },[userID]);
+
+  useEffect(() => {
+    if (images?.length > 0) {
+      images.forEach(post => {
+        if (post.postId) {
+          fetchLikes(post.postId); // Fetch likes for each post
+          likesCount(post.postId); // Fetch like counts for each post
+        }
+      });
+    }
+  }, [images,fetchLikes]);
   
   useEffect(() => {
-    if (userID) {
       fetchImage();
-    }
-  },[]);
+  },[fetchImage]);
   
             const handleImageChange = (event) => {
               const selectedFile = event.target.files[0];
@@ -211,7 +160,7 @@ const Photos = () => {
             };
   return (
     <>
-    <div className='w-full flex'>
+    <div className='max-w-[30rem] w-full'>
     <Modal appElement={document.getElementById('root')}
     style={{
         content: {
@@ -222,24 +171,24 @@ const Photos = () => {
           marginRight: '-50%',
           backgroundColor:'transparent',
           transform: 'translate(-50%, -50%)',
-          width: '80%',
+          width: '90%',
           height: '60%',
           overflowY: 'auto',
           border:'none'
         },}}
   isOpen={uploadPhoto} onRequestClose={closeuploadPhoto}>
-        <div className='flex  w-full items-center justify-center'>
-      <div className='w-1/2 h-96 flex flex-col p-4 gap-4 shadow-lg rounded-md bg-black'>
-        <div className='flex justify-between p-2 items-center justify-center'><span className='font-semibold text-lg'>Upload</span><div onClick={closeuploadPhoto} className='cursor-pointer bg-gray-200 p-1 hover:bg-red hover:text-white rounded-full'><IoClose className='h-5 w-5 cursor-pointer'/></div></div>
+        <div className='flex max-w-[28rem] w-full bg-white rounded-md items-center justify-center'>
+      <div className=' w-full flex flex-col p-4 gap-4 shadow-lg rounded-md'>
+        <div className='flex justify-between px-6 py-2 items-center justify-center'><span className='font-semibold text-lg'>Upload</span><div onClick={closeuploadPhoto} className='cursor-pointer bg-gray-200 p-1 hover:bg-red hover:text-white rounded-full'><IoClose className='h-5 w-5 cursor-pointer'/></div></div>
         <div className='w-full h-full flex flex-col items-center gap-6 justify-center'>
-        <div className='p-2 cursor-pointer border flex items-center justify-center gap-1 w-1/2 rounded-md border-cta text-cta hover:bg-cta hover:text-white'>
+        <div className='p-2 cursor-pointer border flex items-center justify-center gap-1 w-5/6 rounded-md border-cta text-cta hover:bg-cta hover:text-white'>
             <label className='cursor-pointer'>
               <span className='flex items-center gap-1'><Icon icon="material-symbols:image-outline" width="1.2em" height="1.2em" />Upload Image</span>
               <input id='uploadphoto'  onChange={(e) => handleImageChange(e)} type='file' accept='image/jpeg, image/png' className='absolute  opacity-0 cursor-pointer' />
             </label>
           </div>
-      <button onClick={openUploadFolder} className='p-2 border flex items-center justify-center gap-1 w-1/2 rounded-md border-cta text-cta hover:bg-cta hover:text-white'><Icon icon="ph:folder-duotone" width="1.2em" height="1.2em" /><span>Upload Folder</span></button>
-      <button onClick={openCreateAlbum} className='p-2 border flex items-center justify-center gap-1 w-1/2 rounded-md border-cta text-cta hover:bg-cta hover:text-white'><Icon icon="ic:twotone-add" width="1.2em" height="1.2em"/><span>Create Album</span></button>
+      <button onClick={openUploadFolder} className='p-2 border flex items-center justify-center gap-1 w-5/6 rounded-md border-cta text-cta hover:bg-cta hover:text-white'><Icon icon="ph:folder-duotone" width="1.2em" height="1.2em" /><span>Upload Folder</span></button>
+      <button onClick={openCreateAlbum} className='p-2 border flex items-center justify-center gap-1 w-5/6 rounded-md border-cta text-cta hover:bg-cta hover:text-white'><Icon icon="ic:twotone-add" width="1.2em" height="1.2em"/><span>Create Album</span></button>
       </div>
       </div>
     </div>
@@ -296,20 +245,20 @@ const Photos = () => {
  isOpen={createAlbum} onRequestClose={closePopups} >
   <Createalbum close={closePopups} />
   </Modal>
-        <div className='flex flex-col max-w-[30rem] w-full px-2 h-[57vh] shadow-lg drop'>
-        <div className='font-semibold text-sm p-2'>Photos ({images?.length})</div>
-        <div className='flex flex-wrap  gap-1'>
-          {parseInt(userID) === userId && <div onClick={openuploadPhoto} className='w-28 h-28 flex rounded-md bg-gray-200 cursor-pointer items-center justify-center'>
-          <label className='cursor-pointer text-sm'>
+        <div className='flex flex-col py-2 drop '>
+        <div className='font-semibold text-lg p-4'>Photos ({images?.length})</div>
+        <div className='flex flex-wrap p-2 gap-2'>
+          {parseInt(userID) === userId && <div onClick={openuploadPhoto} className='w-28 h-28 flex bg-gray-50 cursor-pointer items-center justify-center'>
+          <label className='cursor-pointer'>
           <span className='flex flex-col items-center gap-2'><Icon className='text-cta' icon="zondicons:add-solid" width="1.2em" height="1.2em"   />Upload</span>
           </label>
           </div>}
         {images?.map((photo)=>{
           return(
           <div key={photo.postId} className='inline-block cursor-pointer relative overflow-hidden'>
-<NavLink key={photo.postId} to={`/photos/${userID}/${photo.postId}`}>
+  <NavLink to={`/post/${userID}/${photo.postId}`}>
   <div className='relative cursor-pointer'>
-  <img className='w-28 h-28 rounded-lg' src={`http://192.168.1.4:8086${photo.imageUrl}`} alt={`http://192.168.1.4:8086${photo.imageUrl}`} />
+  <img className='w-28 h-28 rounded-lg' src={`http://localhost:8080/posts${photo.imageUrl}`} alt={`http://localhost:8080/posts${photo.imageUrl}`} />
     <div className="absolute inset-0 bg-black opacity-0 transition-opacity duration-300 hover:opacity-80 rounded-lg flex items-center justify-center">
     <p className="text-white flex items-center justify-center gap-2 md:w-full i know an assassin when i see one unmaiyana miso kellam free pass kudutharrathu namma hypocrisy ah question panna label ottidrathu paaka azhaga irukka nu tha mannichu vidren avan varamaatan di yaaru pa athu crowd uh enakku therinjavangala achum yarna maati tholaingalen da ithu mattu enga meera ka ku therinjuthu rocket raja oru thirudan ah whats a crocodile doing in perungalathur ethayachum sollu ya w-40 md:text-lg font-semibold"> <Icon className='text-cta' icon="ph:heart-fill" width="1.4em" height="1.4em" />{likeCount[photo.postId] || 0} </p>
     </div>
@@ -317,6 +266,7 @@ const Photos = () => {
 </NavLink>
 </div>
 )})}
+
         </div>
         </div>
     </div>

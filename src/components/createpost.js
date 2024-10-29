@@ -4,11 +4,11 @@ import { selectPost,removeSelected } from '../slices/postslice';
 import { useDispatch, useSelector } from 'react-redux';
 import InputEmoji from 'react-input-emoji';
 import MapSelector from './mapselector';
-import moment from 'moment';
 import axios from 'axios';
-
+import { useNavigate } from 'react-router-dom';
 
 const Createpost = () => {
+  const Navigate = useNavigate()
   const dispatch = useDispatch();
   const { selected } = useSelector((state) => state.post);
   const [file, setFile] = useState(null);
@@ -16,57 +16,11 @@ const Createpost = () => {
   const [showMap, setShowMap] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [user,setUser] = useState()
-
   const [description,setDescription] = useState('')
   const userId = useSelector((state) => state.auth.userId);
-  const img = <Icon className='w-6 h-5' icon="ph:image" />;
-  const video = <Icon className='w-6 h-5' icon="bx:video" />;
-  const files = <Icon className='w-6 h-5' icon="ic:baseline-attach-file" />;
-  const reels = <Icon className='w-6 h-5' icon="icon-park-outline:video-two" />;
-  
-  const icons = [
-    {
-      id: 1,
-      icon: img,
-      allowed: 'image/*',
-      type: 'IMAGE',  // Use a human-readable type
-    },
-    {
-      id: 2,
-      icon: video,
-      allowed: 'video/*',
-      type: 'VIDEO',  // Use a human-readable type
-    },
-    {
-      id: 3,
-      icon: reels,
-      allowed: 'video/*',
-      type: 'REELS',  // Use a human-readable type
-    },
-    {
-      id: 4,
-      icon: files,
-      allowed: '',
-      type: 'FILE',  // Generic file type
-    },
-  ];
 
-  const handleImageChange = (event, type) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const selectedData = {
-          url: reader.result,
-          type: selectedFile.type,
-        };
-        dispatch(selectPost(selectedData)); // Dispatch action with the selected file data
-        setFile(selectedFile); // Store the file object
-        setPostType(type); // Set postType based on the selected type
-      };
-      reader.readAsDataURL(selectedFile); // Read the file as a data URL
-    }
-  };
+
+
 
   const renderMedia = () => {
     if (!selected) return null;
@@ -120,7 +74,7 @@ const Createpost = () => {
     }
 
     try {
-      const response = await fetch('http://192.168.1.4:8080/posts', {
+      const response = await fetch('http://localhost:8080/posts', {
         method: 'POST',
         body: formDataObj,
       });
@@ -145,7 +99,7 @@ const Createpost = () => {
 
   const fetchUserDetails = async () => {
     try {
-      const response = await axios.get(`http://192.168.1.4:8080/api/users/${userId}`, {
+      const response = await axios.get(`http://localhost:8080/api/users/${userId}`, {
         method: 'GET',
         headers: {
     
@@ -161,22 +115,21 @@ const Createpost = () => {
     fetchUserDetails();
   }, [userId]);
 
-
+  const handlePost = ()=>{
+    Navigate('/postinfo')
+  }
 
   return (
-    <form onSubmit={handleSubmit} className='w-full bg-white rounded-md px-6 py-3 flex gap-2 flex-col shadow-lg'>
-      {/* <p className='font-semibold py-2'>Create post</p> */}
-
+    <form onSubmit={handleSubmit} className='max-w-[30rem] w-full bg-white rounded-md px-6 flex gap-2 flex-col shadow-lg'>
       <div className='w-full flex items-center gap-2'>
-      <img className='w-9 h-9 rounded-full' src={`http://192.168.1.4:8086${user?.profileImagePath}`} alt='' />
-      <InputEmoji
+      <img className='w-9 h-9 rounded-full' src={`http://localhost:8080/posts${user?.profileImagePath}`} alt='' />
+      <textarea onClick={handlePost} className='w-full p-2 border border-gray-600 rounded-md'
         value={description}
         onChange={setDescription} // Update description state
-        placeholder='what’s on your mind'
+        placeholder='Write something..'
       />
     </div>
-
-      <div className='flex gap-3'>
+      {/* <div className='flex gap-3'>
         <Icon
           className='w-5 h-5 cursor-pointer'
           icon="carbon:location"
@@ -195,7 +148,7 @@ const Createpost = () => {
             </label>
           </div>
         ))}
-      </div>
+      </div> */}
       <div>{renderMedia()}</div>
       {showMap && (
         <MapSelector
@@ -203,9 +156,9 @@ const Createpost = () => {
           onClose={() => setShowMap(false)}
         />
       )}
-      <button type='submit' className='bg-cta p-2 cursor-pointer text-white text-md font-semibold rounded-md'>
+      {/* <button type='submit' className='bg-cta p-2 cursor-pointer text-white text-sm font-semibold rounded-md'>
         Post
-      </button>
+      </button> */}
     </form>
   );
 };

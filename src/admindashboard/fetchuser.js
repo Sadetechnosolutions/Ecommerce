@@ -2,7 +2,7 @@ import React from "react";
 
 export const fetchUserProfile = async (token) => {
     try {
-      const response = await fetch('http://192.168.1.4:8081/api/auth/adminuser/get-profile', {
+      const response = await fetch('http://localhost:8081/api/auth/adminuser/get-profile', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`

@@ -8,7 +8,7 @@ import Modal from 'react-modal';
 import axios from 'axios';
 import { NavLink } from 'react-router-dom';
 
-const Post = () => {
+const Profession = () => {
   const [comment, setComment] = useState(null);
   const [edit, setEdit] = useState(false);
   const [saved, setSaved] = useState({});
@@ -572,12 +572,9 @@ const Post = () => {
     }
   }, [userData]);
 
-  
-
-  const isLiked = (postId) => like[postId] || false;
   return (
     <form onSubmit={handleSubmit} className="rounded-md flex flex-col bg-white gap-6 shadow-lg max-w-[30rem] w-full py-2 px-4">
-      {userData.filter(post=>post.postVisibility==='PERSONAL')?.map((post) =>{ 
+      {userData.filter(post=>post.postVisibility==='PROFESSIONAL')?.map((post) =>{ 
              const calculateTimeDifference = () => {
               const pastDate = moment(post.createdAt);
               const now = moment();
@@ -603,7 +600,7 @@ const Post = () => {
         
         const timeDifference = calculateTimeDifference();
         return(
-          <NavLink to={`/post/${post.userId}/${post.postId}`}> <div className='w-5/3 flex flex-col gap-2 shadow-lg py-4 px-4 relative' key={post.postId}>
+        <div className='w-5/3 flex flex-col gap-2 shadow-lg py-4 px-4 relative' key={post.postId}>
           <div className="flex justify-between items-center">
             <div className="flex gap-2 items-center">
             <NavLink to={`/user/${post.userId}`}><img className="rounded-full w-9 h-9" src={`http://localhost:8080/posts${post?.profileImagePath}`} alt="Profile" /></NavLink>
@@ -760,7 +757,7 @@ style={{
 <div className='flex flex-col'>
 <p className='font-semibold text-xs'>{commentUser?.UserName}</p>
 <span className='text-xxs'>{commenttime}</span>
-{comment.imagePath && <img className='w-52 h-44' src={`http://localhost:8080/posts${comment.imagePath}`} />}
+{comment.imagePath && <img className='w-52 h-44' src={`http://localhost:8086${comment.imagePath}`} />}
 </div>
 </div>
 <div className="flex flex-col items-center relative"> {/* Ensure dropdown menu is positioned correctly */}
@@ -808,7 +805,7 @@ icon={isClicked ? "material-symbols-light:favorite" : "material-symbols-light:fa
   <div className="text-gray-500"></div>
 )}
 
-        </div></NavLink>
+        </div>
       )})}
               <Modal  appElement={document.getElementById('root')}
 style={{
@@ -833,9 +830,8 @@ style={{
     </div>
  </Modal>
     </form>
-
   );
 };
 
-export default Post;
+export default Profession;
 

@@ -28,7 +28,7 @@ const FollowersView = ()=>{
             <div className="flex items-center gap-2">
             <img className="w-16 h-16 rounded-full" src="profile.jpg"/>
             <p className="text-lg">John liebert</p>
-            <span></span>
+
             </div>
             <span> Cinematographer </span>
             <span>64 Mutual</span>
@@ -38,7 +38,7 @@ const FollowersView = ()=>{
             <div className="flex items-center gap-2">
             <img className="w-16 h-16 rounded-full" src="profile.jpg"/>
             <p className="text-lg">John liebert</p>
-            <span></span>
+       
             </div>
             <span> Cinematographer </span>
             <span>64 Mutual</span>

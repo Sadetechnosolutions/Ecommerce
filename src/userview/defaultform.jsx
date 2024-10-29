@@ -99,7 +99,7 @@ const UserForm = () => {
             formData.append('coverPic', coverpic);
         }
         try {
-            const response = await fetch('http://192.168.1.4:3001/users', {
+            const response = await fetch('http://localhost:3001/users', {
                 method: 'POST',
                 body: formData,
             });

@@ -9,7 +9,7 @@ const Email = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get('http://192.168.1.4:8081/api/auth/users/descending');
+            const response = await axios.get('http://localhost:8081/api/auth/users/descending');
             const usersData = response.data.map(user => ({
                 id: user.id,
                 UserName: user.name,
@@ -26,7 +26,7 @@ const Email = () => {
 
     const fetchOtps = async () => {
         try {
-            const response = await axios.get('http://192.168.1.4:8081/api/auth/otps/descending');
+            const response = await axios.get('http://localhost:8081/api/auth/otps/descending');
             const otpsData = response.data.map(otp => ({
                 id: otp.id, 
                 Otp:otp.otp,

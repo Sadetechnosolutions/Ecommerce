@@ -13,7 +13,14 @@ import Post from './userview/timeline';
 import Friends from './userview/friendlist';
 import Photos from './userview/Photos';
 import Videos from './userview/videos';
-import Displayphoto from './pages/displayphotos';
+import Displayphoto from './pages/displaypost';
+import StoryPage from './pages/storydisplay';
+import Friendrequest from './pages/friendrequest';
+import Notifications from './pages/notifications';
+import MessageList from './pages/messagelist';
+import Chat from './pages/chat';
+import StoryUpload from './components/createstory';
+import Postinfo from './components/postDetails';
 
 function App() {
   return (
@@ -31,7 +38,14 @@ function App() {
         <Route path='/friends/:userID' element={<DefaultWithNavbar><DefaultHeader><Friends /></DefaultHeader></DefaultWithNavbar>} />
         <Route path='/photos/:userID' element={<DefaultWithNavbar><DefaultHeader><Photos /></DefaultHeader></DefaultWithNavbar>} />
         <Route path='/videos/:userID' element={<DefaultWithNavbar><DefaultHeader><Videos /></DefaultHeader></DefaultWithNavbar>} />
-        <Route path='/photos/:userID/:postID' element={<DefaultWithNavbar><Displayphoto /></DefaultWithNavbar>} />
+        <Route path='/post/:userID/:postID' element={<DefaultWithNavbar><Displayphoto /></DefaultWithNavbar>} />
+        <Route path='/storypage' element={<StoryPage />}/>
+        <Route path='/friendrequest' element={<DefaultWithNavbar> <Friendrequest /></DefaultWithNavbar>}/>
+        <Route path='/notifications' element={<DefaultWithNavbar> <Notifications /></DefaultWithNavbar>}/>
+        <Route path='/messages' element={<DefaultWithNavbar> <MessageList /></DefaultWithNavbar>}/>
+        <Route path='/messages/:messageID' element={<DefaultWithNavbar><Chat /></DefaultWithNavbar>} />
+        <Route path='/uploadStory' element={<StoryUpload />} />
+        <Route path='/postinfo' element={<Postinfo />} />
       </Routes>
     </Router>
     </>

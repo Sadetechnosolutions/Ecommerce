@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { setpostLike } from '../slices/likeslice';
 import InputEmoji from 'react-input-emoji';
-import { addCommentnf, selectPhotoComment, deleteCommentnf, editComment, addToSaved } from "../slices/photoslice";
+import { editComment, addToSaved } from "../slices/photoslice";
 import { useDispatch, useSelector } from "react-redux";
 import DropdownMenu from '../components/dropdownmenu';
 import moment from "moment";
@@ -14,10 +13,7 @@ import axios from 'axios';
 const Post = () => {
   const [comment, setComment] = useState(null);
   const [share, showShare] = useState(false);
-  const [shareImage, setShareImage] = useState(null);
-  const [shareVideo, setShareVideo] = useState(null);
   const [edit, setEdit] = useState(false);
-  const [hover, setHover] = useState(null);
   const [saved, setSaved] = useState({});
   const [postComment, setPostComment] = useState('');
   const [liked, setLiked] = useState(false);
@@ -40,7 +36,6 @@ const Post = () => {
   const [like,setLike] = useState(false);
   const [likeCount,setLikeCount] = useState({});
   const [users, setUsers] = useState([]);
-  const [timeDifference, setTimeDifference] = useState('');
   const [animationPostId, setAnimationPostId] = useState(null);
   const [likedBy,setLikedBy] = useState(null);
 
@@ -128,7 +123,7 @@ const Post = () => {
         console.error('No token found in localStorage');
         return;
       }
-      const response = await fetch(`http://192.168.1.4:8080/likes/post/${postId}`, {
+      const response = await fetch(`http://localhost:8080/likes/post/${postId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -168,7 +163,7 @@ const Post = () => {
         return;
       }
       const userIdValue = parseInt(userID, 10);
-      const response = await fetch(`http://192.168.1.4:8080/api/users/${userID}`, {
+      const response = await fetch(`http://localhost:8080/api/users/${userID}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -201,7 +196,7 @@ const Post = () => {
   const fetchUserDetails = async () => {
     const userIdValue = parseInt(userIDObject.userID, 10);
     try {
-      const response = await axios.get(`http://192.168.1.4:8080/api/users/${userIdValue}`, {
+      const response = await axios.get(`http://localhost:8080/api/users/${userIdValue}`, {
         method: 'GET',
         headers: {
     
@@ -219,7 +214,7 @@ const Post = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get('http://192.168.1.4:8081/api/auth/users/descending');
+      const response = await axios.get('http://localhost:8081/api/auth/users/descending');
       const usersData = response.data.map(user => ({
         id: user.id,
         UserName: user.name,
@@ -248,7 +243,7 @@ const Post = () => {
       // Convert userID to an integer and validate
       // Make the API request with the integer userID
 
-      const response = await fetch(`http://192.168.1.4:8080/posts/user/${userIdValue}`, {
+      const response = await fetch(`http://localhost:8080/posts/user/${userIdValue}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -340,7 +335,7 @@ const Post = () => {
     e.preventDefault();
   
     try {
-      const response = await fetch(`http://192.168.1.4:8080/posts/${deleteId}`, {
+      const response = await fetch(`http://localhost:8080/posts/${deleteId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -365,7 +360,7 @@ const Post = () => {
       userId:userId
     };
     try {
-      const response = await fetch(`http://192.168.1.4:8080/likes/toggle?postId=${postId}&userId=${userId}`, {
+      const response = await fetch(`http://localhost:8080/likes/toggle?postId=${postId}&userId=${userId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -386,7 +381,7 @@ const Post = () => {
   };
   const likesCount = async (postId) => {
     try {
-      const response = await fetch(`http://192.168.1.4:8080/likes/post/${postId}/count`);
+      const response = await fetch(`http://localhost:8080/likes/post/${postId}/count`);
       if (response.ok) {
         const data = await response.json();
         setLikeCount(prevCounts => ({
@@ -413,7 +408,7 @@ const Post = () => {
 
   const handleLike = async (postId) => {
     try {
-      const response = await fetch(`http://192.168.1.4:8080/likes/toggle?postId=${postId}&userId=${userId}`, {
+      const response = await fetch(`http://localhost:8080/likes/toggle?postId=${postId}&userId=${userId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -427,7 +422,7 @@ const Post = () => {
         }));
         setAnimationPostId(postId);
         // Re-fetch like count or update locally
-        const countResponse = await fetch(`http://192.168.1.4:8080/likes/post/${postId}/count`);
+        const countResponse = await fetch(`http://localhost:8080/likes/post/${postId}/count`);
         const countData = await countResponse.json();
         setLikeCount(prev => ({
           ...prev,
@@ -453,7 +448,7 @@ const Post = () => {
       textContent: postComment
     };
     try {
-      const response = await fetch('http://192.168.1.4:8080/comments', {
+      const response = await fetch('http://localhost:8080/comments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -487,7 +482,7 @@ const Post = () => {
         console.error('No token found in localStorage');
         return;
       }
-      const url = `http://192.168.1.4:8085/comments/post/${postId}`;
+      const url = `http://localhost:8085/comments/post/${postId}`;
       console.log(`Fetching comments from URL: ${url}`); // Debug log
   
       const response = await fetch(url, {
@@ -600,7 +595,7 @@ console.log(typeof(comment))
         <div className='w-full flex flex-col gap-4 shadow-lg py-4 px-4 relative' key={post.postId}>
           <div className="flex justify-between items-center">
             <div className="flex gap-1 items-center">
-              <img className="rounded-full w-9 h-9" src={`http://192.168.1.4:8082${user?.profileImagePath}`} alt={`http://192.168.1.4:8082${user?.profileImagePath}`}/>
+              <img className="rounded-full w-9 h-9" src={`http://localhost:8080/posts${user?.profileImagePath}`} alt={`http://localhost:8080/posts${user?.profileImagePath}`}/>
               <div className="flex flex-col"> 
                 <span className="font-semibold">
             <span key={users.id} className="font-semibold text-sm">{post.name}</span>
@@ -626,10 +621,10 @@ console.log(typeof(comment))
           </div>
           <span>{post.description}</span>
           {post.postType === 'IMAGE' ? (
-            <img className='w-full h-64' src={`http://192.168.1.4:8086${post.imageUrl}`} alt='' />
+            <img className='w-full h-64' src={`http://localhost:8080/posts${post.imageUrl}`} alt='' />
           ) : post.postType === 'VIDEO' ? (
-            <video className='w-full h-64' controls>
-              <source src={`http://192.168.1.4:8080/posts${post.videoUrl}`} type="video/mp4" />
+            <video className='w-full bg-black h-64' controls>
+              <source src={`http://localhost:8080/posts${post.videoUrl}`} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           ) : null}
@@ -637,11 +632,11 @@ console.log(typeof(comment))
             <div className='flex items-center'>
           <Icon
             onClick={() => handleLike(post.postId)}
-            className={`cursor-pointer h-7 w-7 ${liked[post.postId] ? 'text-pink' : 'text-gray-700'} ${animationPostId === post.postId ? 'like-animate' : ''}`}
-            icon={liked[post.postId] ? "material-symbols-light:favorite" : "material-symbols-light:favorite-outline"}
+            className={`cursor-pointer h-7 w-7 ${like[post.postId] ? 'text-pink' : 'text-gray-700'} ${animationPostId === post.postId ? 'like-animate' : ''}`}
+            icon={like[post.postId] ? "material-symbols-light:favorite" : "material-symbols-light:favorite-outline"}
             width='1.2em'
             height='1.2em'
-          /> {likeCount[post.postId] || 0}</div>
+          /> {likeCount[post.postId] || ''}</div>
           <div className='flex items-center gap-1'><Icon onClick={() => toggleComment(post.postId)} className="cursor-pointer h-6 w-6 text-gray-600" icon="iconamoon:comment-light" />{ <span>{displayComments[post.postId]?.length}</span> || 0 }</div>
           </div>
           {comment == post.postId && (   <div className="flex items-center gap-1"><label className="cursor-pointer"><Icon className="w-7 h-7 text-gray-500" icon="mdi:camera-outline" /><input  className="absolute opacity-0" type="file" /></label><InputEmoji onChange={(text) => setPostComment(text)} placeholder="Add a comment" /><Icon onClick={handleComment} className='text-cta cursor-pointer' icon="majesticons:send" width="1.5em" height="1.6em" strokeWidth='2' /></div>)}

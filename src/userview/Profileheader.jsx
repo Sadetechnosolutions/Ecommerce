@@ -1,4 +1,4 @@
-import React,{useState,useEffect} from 'react'
+import React,{useState,useEffect, useCallback} from 'react'
 import { Link, NavLink,useLocation } from 'react-router-dom'
 import { Icon } from '@iconify/react/dist/iconify.js';
 import { useSelector,useDispatch } from 'react-redux';
@@ -18,7 +18,7 @@ const Profileheader = () => {
   const [follow,setFollow] = useState(false)
   const dispatch = useDispatch();
   const {selectedprofilepic} = useSelector((state)=>state.photo)
-  const {profilepic} = useSelector((state)=>state.photo)
+  const [profile,setProfile] = useState()
   const {selectedcoverpic} = useSelector((state)=>state.photo)
   const {coverpic} = useSelector((state)=>state.photo)
   const userId = useSelector((state) => state.auth.userId);
@@ -33,6 +33,7 @@ const Profileheader = () => {
   const [friends,setFriends] = useState()
   const [isFriends,setIsFriends] = useState()
   const [options,setOptions] = useState(false)
+  const [profilepic,setProfilepic] = useState(profile?.user.profileImagePath)
 
   const handleOptions = ()=>{
     setOptions(!options)
@@ -71,7 +72,7 @@ const Profileheader = () => {
     if (selectedFile) {
       const reader = new FileReader();
       reader.onload = () => {
-        dispatch(changePhoto(reader.result)); 
+        setProfilepic(selectedFile); 
         setFile(selectedFile);
       };
       reader.readAsDataURL(selectedFile); 
@@ -134,7 +135,7 @@ const Profileheader = () => {
         }
         const fetchUserDetails = async () => {
           try {
-            const response = await axios.get(`http://192.168.1.4:8080/api/users/${userId}`, {
+            const response = await axios.get(`http://localhost:8080/api/users/${userID}`, {
               method: 'GET',
               headers: {
           
@@ -159,7 +160,7 @@ const Profileheader = () => {
               console.error('No token found in localStorage');
               return;
             }
-            const response = await fetch(`http://192.168.1.4:8080/follows/api/followers/${userId}`, {
+            const response = await fetch(`http://localhost:8080/follows/api/followers/${userID}`, {
               method: 'GET',
               headers: {
                 'Authorization': `Bearer ${token}`,
@@ -178,12 +179,38 @@ const Profileheader = () => {
             console.error('Error fetching user data:', error);
           }
         };
-useEffect(()=>{
-fetchFollowers()
-fetchFollowing()
-fetchRequest()
-fetchfriends()
-},[userID,userId])
+
+        const fetchProfile = useCallback(async()=>{
+          try{
+            const response = await fetch(`http://localhost:8080/home/api/aggregate/${userID}`, {
+              method: 'GET',
+            });
+            if(response.ok){
+              const data = await response.json()
+              setProfile(data)
+            }
+          }
+          catch(error){
+          console.error('Error fetching user data:', error);
+          }
+        },[userId])
+      
+        useEffect(()=>{
+          fetchProfile()
+        },[fetchProfile])
+
+        useEffect(() => {
+          const fetchData = async () => {
+            await Promise.all([
+              fetchFollowers(),
+              fetchFollowing(),
+              fetchRequest(),
+              fetchfriends(),
+            ]);
+          };
+        
+          fetchData();
+        }, [userID, userId]);
 
 const fetchFollowing = async () => {
 try {
@@ -192,7 +219,7 @@ try {
     console.error('No token found in localStorage');
     return;
   }
-  const response = await fetch(`http://192.168.1.4:8080/follows/api/following/${userId}`, {
+  const response = await fetch(`http://localhost:8080/follows/api/following/${userID}`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -219,7 +246,7 @@ const fetchRequest = async () => {
       console.error('No token found in localStorage');
       return;
     }
-    const response = await fetch(`http://192.168.1.4:8080/friend-requests/${userId}/sent-requests`, {
+    const response = await fetch(`http://localhost:8080/friend-requests/${userId}/sent-requests`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -246,7 +273,7 @@ const fetchRequest = async () => {
         console.error('No token found in localStorage');
         return;
       }
-      const response = await fetch(`http://192.168.1.4:8080/friend-requests/${isCurrentUser ? userId:userID}/friends`, {
+      const response = await fetch(`http://localhost:8080/friend-requests/${isCurrentUser ? userId:userID}/friends`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -269,7 +296,7 @@ const fetchRequest = async () => {
         const followUser = async ()=>{
           const token = localStorage.getItem('token')
           try{
-            const response = await fetch(`http://192.168.1.4:8080/follows/follow/${userId}/${userID}`,{
+            const response = await fetch(`http://localhost:8080/follows/follow/${userId}/${userID}`,{
               method:'POST',
               headers:{
                 'Authorization':`bearer${token}`
@@ -297,7 +324,7 @@ const fetchRequest = async () => {
             recipientId:userID
           }
           try{
-            const response = await fetch(`http://192.168.1.4:8080/friend-requests/send?senderId=${userId}&recipientId=${userID}`,{
+            const response = await fetch(`http://localhost:8080/friend-requests/send?senderId=${userId}&recipientId=${userID}`,{
               method:'POST',
               headers:{
                 'Authorization':`bearer${token}`
@@ -324,7 +351,7 @@ const fetchRequest = async () => {
             recipientId:userID
           }
           try{
-            const response = await fetch(`http://192.168.1.4:8080/friend-requests/decline?senderId=${userId}&recipientId=${userID}`,{
+            const response = await fetch(`http://localhost:8080/friend-requests/decline?senderId=${userId}&recipientId=${userID}`,{
               method:'POST',
               headers:{
                 'Authorization':`bearer${token}`
@@ -347,7 +374,7 @@ const fetchRequest = async () => {
         const unfollowUser = async ()=>{
           const token = localStorage.getItem('token')
           try{
-            const response = await fetch(`http://192.168.1.4:8080/follows/unfollow/${userId}/${userID}`,{
+            const response = await fetch(`http://localhost:8080/follows/unfollow/${userId}/${userID}`,{
               method:'DELETE',
               headers:{
                 'Authorization':`bearer${token}`
@@ -376,7 +403,7 @@ const fetchRequest = async () => {
       const token = localStorage.getItem('token')
   
       try{
-        const response = await fetch(`http://192.168.1.4:8080/friend-requests/delete-friend/${userId}/${unfriendId}`,{
+        const response = await fetch(`http://localhost:8080/friend-requests/delete-friend/${userId}/${unfriendId}`,{
           method:'DELETE',
           headers:{
             'Authorization':`bearer${token}`
@@ -419,7 +446,7 @@ style={{
   <div className='flex mt-4 px-4 w-full items-center justify-between'><p className='text-lg font-semibold'>Change Profile picture</p><div onClick={closeImageForm} className='p-1 cursor-pointer hover:bg-red hover:text-white rounded-full bg-gray-100'><IoClose className='w-5 h-5' /></div></div>
   <div className='w-full h-full flex flex-col gap-4 items-center justify-center'>
     <div className='flex cursor-pointer justify-center items-center gap-8'>
-<img className='h-28 w-28 rounded-full' src={selectedprofilepic} alt=''/><label className="relative cursor-pointer rounded-md px-3 py-2  border border-cta text-white bg-cta border">
+<img className='h-28 w-28 rounded-full' src={`http://localhost:8080/posts${profile?.user.profileImagePath}`} alt={`http://localhost:8080/posts${profile?.user.profileImagePath}`}/><label className="relative cursor-pointer rounded-md px-3 py-2  border border-cta text-white bg-cta border">
 <button className='cursor-pointer text-sm'>Upload an Image</button>
 <input type="file" accept='image/*' onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer" />
 </label></div>
@@ -464,13 +491,13 @@ style={{
 
 <div className='max-w-[30rem] w-full flex items-center justify-center'>
 <div className='flex flex-col w-full flex items-center justify-center'>
-  <div style={{backgroundImage:`url('http://192.168.1.4:8086${user?.bannerImagePath}')`}} alt={user?.bannerImagePath} className='flex flex-col relative border w-full h-44 bg-cover bg-center  bg-no-repeat gap-4 justify-end'>
+  <div style={{backgroundImage:`url('http://localhost:8080/posts${profile?.user.bannerImagePath}')`}} alt={profile?.user.bannerImagePath} className='flex flex-col relative border w-full h-44 bg-cover bg-center  bg-no-repeat gap-4 justify-end'>
     {parseInt(userID) === userId && ( <div onClick={openCoverForm} className='absolute text-sm right-2 top-2 flex gap-1 items-center rounded-md cursor-pointer px-2 py-1 bg-white bg-opacity-40'><Icon icon="mdi:camera" width="1.2em" height="1.2em"  style={{color: ''}} /><span className='font-semibold'>Change cover photo</span> </div>
     )} 
 
 <div className='relative w-max flex p-4 items-center'>
        <div>
-        <img className='w-20 border-4 border-gray-300e h-20 rounded-full' alt='' src={`http://192.168.1.4:8086${user?.profileImagePath}`} /></div> 
+        <img className='w-20 border-4 border-gray-300e h-20 rounded-full' alt='' src={`http://localhost:8080/posts${profile?.user.profileImagePath}`} /></div> 
        { parseInt(userID) === userId && <div onClick={openImageForm} className='absolute justify-end bottom-4 right-4 flex text-cta hover:bg-cta hover:text-white border border-cta cursor-pointer items-center justify-center w-min p-1 rounded-full bg-white'><Icon icon="mdi:camera" width="1em" height="1em"  style={{color: ''}} /></div>}
         </div>
         
@@ -505,7 +532,7 @@ style={{
         <div className='flex gap-1 cursor-pointer items-center justify-center w-32 rounded-full h-10 bg-cta hover:opacity-85 text-white'>
         {isFriends? <div onClick={handleOptions} className='flex items-center gap-1'><Icon className='w-4 h-4' icon="fa-solid:user-friends" />Friends</div>:isRequested? <div onClick={cancelRequest} className='flex items-center gap-1 font-semibold'><Icon className='w-4 h-4' icon="material-symbols:person-cancel-rounded" /> <span className='text-sm'>Cancel</span></div> : <div onClick={sendRequest} className='flex items-center gap-1 font-semibold'><Icon className='w-3 h-3' icon="mingcute:user-add-fill" /><span className='text-sm'>Add Friend</span></div>}
           </div>  
-          {options && <div className='absolute flex flex-col p-2 shadow-lg w-28'>
+          {options && <div className='absolute bg-white flex flex-col p-2 shadow-lg w-28'>
             <span onClick={()=>{unFriend(user?.id)}} className='flex cursor-pointer items-center gap-1 py-1 text-sm justify-center' ><Icon className='text-cta' icon="icon-park-solid:people-delete-one" width="1.2em" height="1.2em" />Unfriend</span>
             <span className='flex items-center cursor-pointer gap-1 py-1 text-sm justify-center'>Block</span></div>}
 </div>
