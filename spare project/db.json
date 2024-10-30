@@ -1,0 +1,305 @@
+{
+  "users": [
+    {
+      "id": "3d72",
+      "name": "pradeep",
+      "phoneNumber": "8012929882",
+      "confirmPassword": "12345",
+      "companyAddress": "Sade Tech",
+      "email": "elakkiyakrish30@gmail.com",
+      "password": "12345",
+      "companyType": "IT",
+      "companyName": "Sade Tech",
+      "gstNo": "7890654321"
+    },
+    {
+      "id": "6b80",
+      "name": "pallavi",
+      "phoneNumber": "0987654321",
+      "confirmPassword": "12345",
+      "companyAddress": "ABT 1234@pallavaram",
+      "email": "elakkiyakrish30@gmail.com",
+      "password": "12345",
+      "companyType": "Spare",
+      "companyName": "Sade Tech",
+      "gstNo": "12344567"
+    }
+  ],
+  "products": [
+    {
+      "id": "f52b",
+      "name": "abc",
+      "slug": "Parts",
+      "visibility": "",
+      "image": "",
+      "title": "Engine Optimization",
+      "description": "elakkia spare parts"
+    },
+    {
+      "id": "9e8a",
+      "name": "Krishnan",
+      "slug": "Parts",
+      "visibility": "",
+      "image": "",
+      "title": " Engine Optimization",
+      "description": "elakkia spare parts"
+    },
+    {
+      "id": "6833",
+      "name": "pradeep",
+      "slug": "Parts",
+      "visibility": "",
+      "image": "",
+      "title": "Engine Optimization",
+      "description": "elakkia spare parts"
+    },
+    {
+      "id": "d4b4",
+      "name": "Marees",
+      "size": "30ch",
+      "price": "524",
+      "type": "Manual",
+      "quantity": "23",
+      "length": "123",
+      "description": "",
+      "shortDescription": "",
+      "visibility": "Published",
+      "publishDate": "10-09-2024",
+      "categories": "spare parts",
+      "tags": "",
+      "oldPrice": "250",
+      "sku": "Ela",
+      "stockQuantity": "2",
+      "images": "",
+      "pageTitle": "spare parts",
+      "metaDescription": " I Like this spare parts",
+      "enableStockManagement": true
+    },
+    {
+      "id": "85c2",
+      "name": "Sharmi",
+      "size": "23ch",
+      "price": "654",
+      "type": "Manual",
+      "quantity": "23",
+      "length": "123 cm",
+      "description": "",
+      "shortDescription": "",
+      "visibility": "Published",
+      "publishDate": "10-09-2024",
+      "categories": "",
+      "tags": "",
+      "oldPrice": "150",
+      "sku": "Ela",
+      "stockQuantity": "23",
+      "images": "null",
+      "pageTitle": "spare parts",
+      "metaDescription": " Meta Description",
+      "enableStockManagement": true
+    }
+  ],
+  "pro": [
+    {
+      "id": "460b",
+      "image": "",
+      "name": "pradeep",
+      "size": "23ch",
+      "length": "120 cm",
+      "price": "654",
+      "quantity": "23",
+      "type": "manual",
+      "brand": "Maruti",
+      "model": "LXI",
+      "publish": "23-04-2002",
+      "standard": "ISO",
+      "tag": "",
+      "material": "Steeal",
+      "finish": "Wood",
+      "certificate": "Good",
+      "grade": "A",
+      "port": "Elakkiya",
+      "units": "100%"
+    },
+    {
+      "id": "221a",
+      "image": "",
+      "name": "Elakkiya",
+      "size": "23ch",
+      "length": "123 cm",
+      "price": "654",
+      "quantity": "23",
+      "type": "manual",
+      "brand": "Tata",
+      "model": "LXI",
+      "publish": "",
+      "standard": "ISO",
+      "tag": "",
+      "material": "Steeal",
+      "finish": "Wood",
+      "certificate": "Good",
+      "grade": "A",
+      "port": "Elakkiya",
+      "units": "100%"
+    },
+    {
+      "id": "de46",
+      "image": "",
+      "name": "Muthu Krishnan",
+      "size": "23ch",
+      "length": "123 cm",
+      "price": "654",
+      "quantity": "23",
+      "type": "auto",
+      "brand": "Maruti",
+      "model": "LXI",
+      "publish": "23-04-2002",
+      "standard": "ISO",
+      "tag": "",
+      "material": "Steeal",
+      "finish": "Wood",
+      "certificate": "Good",
+      "grade": "A",
+      "port": "Elakkiya",
+      "units": "100%"
+    },
+    {
+      "id": "7902",
+      "image": "",
+      "name": "Shamri",
+      "size": "30ch",
+      "length": "78",
+      "price": "654",
+      "quantity": "23",
+      "type": "Manual",
+      "brand": "Tata",
+      "model": "Vxi",
+      "publish": "10-09-2024",
+      "standard": "ISO",
+      "tag": "",
+      "material": "Steeal",
+      "finish": "Wood",
+      "certificate": "Good",
+      "grade": "A",
+      "port": "Elakkiya",
+      "units": "100%"
+    }
+  ],
+  "name": [
+    {
+      "id": "8dd6"
+    },
+    {
+      "id": "58a6",
+      "PhoneNumber": "",
+      "Password": ""
+    },
+    {
+      "id": "fb92",
+      "PhoneNumber": "",
+      "Password": ""
+    },
+    {
+      "id": "5dc7",
+      "PhoneNumber": "",
+      "Password": ""
+    },
+    {
+      "id": "e05c",
+      "PhoneNumber": "",
+      "Password": ""
+    },
+    {
+      "id": "7dad",
+      "PhoneNumber": "",
+      "Password": ""
+    },
+    {
+      "id": "a57d",
+      "PhoneNumber": "",
+      "Password": ""
+    },
+    {
+      "id": "4bd8",
+      "email": "",
+      "seterror": "",
+      "Password": ""
+    },
+    {
+      "id": "3760",
+      "email": "",
+      "seterror": "",
+      "Password": ""
+    },
+    {
+      "id": "89bd",
+      "email": "",
+      "password": "elakkiyakrish"
+    },
+    {
+      "id": "79c9",
+      "email": "",
+      "password": "pradeepeya"
+    },
+    {
+      "id": "227a",
+      "Email": "30elakkiyakrish@gmail.com",
+      "password": "pradeepela"
+    }
+  ],
+  "coupen": [
+    {
+      "id": "5e8e",
+      "code": "Pradeep",
+      "type": "percentage",
+      "discountValue": "123456",
+      "usageLimit": "asdfghjkl;",
+      "startDate": "2024-10-06",
+      "endDate": "2024-09-01"
+    },
+    {
+      "id": "d043",
+      "code": "",
+      "discountValue": "",
+      "usageLimit": "",
+      "startDate": "",
+      "endDate": ""
+    },
+    {
+      "id": "a680",
+      "code": "",
+      "discountValue": "",
+      "usageLimit": "",
+      "startDate": "",
+      "endDate": ""
+    },
+    {
+      "id": "9145",
+      "code": "",
+      "discountValue": "",
+      "usageLimit": "",
+      "startDate": "",
+      "endDate": ""
+    },
+    {
+      "id": "747e",
+      "code": "",
+      "discountValue": "",
+      "usageLimit": "",
+      "startDate": "",
+      "endDate": ""
+    }
+  ],
+  "coupenlist": [],
+  "elakkiya": [
+    {
+      "id": "ec84",
+      "name": "Elakkiya",
+      "slug": "Parts",
+      "description": "elakkia spare parts",
+      "title": "asdfghjklqwertyuiop[",
+      "Visibility": "published",
+      "visibility": "published",
+      "date": "28.8.2024"
+    }
+  ]
+}
