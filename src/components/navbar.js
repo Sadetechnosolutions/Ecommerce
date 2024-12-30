@@ -3,7 +3,7 @@ import React, { useState,useEffect,useRef } from 'react';
 import { Icon } from '@iconify/react';
 import { useNavigate,NavLink,useLocation } from 'react-router-dom';
 import {Tooltip } from 'react-tooltip';
-import {useSelector} from 'react-redux';
+import { useSelector } from 'react-redux';
 import {useDispatch} from 'react-redux';
 import { addFriend } from '../slices/friendlistslice';
 
@@ -16,7 +16,7 @@ const Navbar = () => {
   const [showAllMessages,setShowAllMessages] = useState(false);
   const [notification,setNotifications] = useState();
   const iconHome = <Icon className='outline-none rounded-full col-white' icon="mynaui:home" width="1.5em" height="1.5em" />;
-  const iconPersonAdd = <Icon className='outline-none rounded-md col-white' icon="akar-icons:person-add" color="red" width="1.3em" height="1.3em" />;
+  const iconPersonAdd = <Icon className='outline-none w-2 h-2 rounded-md col-white' icon="akar-icons:person-add" />;
   const iconNotifications = <Icon className='outline-none rounded-md col-white' icon="ion:notifications-outline" width="1.4em" height="1.4em" />;
   const iconMessageText = <Icon className='outline-none rounded-md col-white' icon="iconoir:message-text" width="1.4em" height="1.4em" />;
   const token = localStorage.getItem('token');
@@ -25,6 +25,13 @@ const Navbar = () => {
   const [requestCount , setRequestCount] = useState(null);
   const [isSidebarOpen,setisSidebarOpen] = useState(false)
   const [users, setUsers] = useState([]);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  // Fetch the dark mode preference from localStorage on initial render
+  useEffect(() => {
+    const savedMode = localStorage.getItem("darkMode") === "true";
+    setIsDarkMode(savedMode);
+  }, []);
 
   const toggle = ()=>{
     setisSidebarOpen(!isSidebarOpen)
@@ -32,7 +39,11 @@ const Navbar = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/users');
+      const response = await fetch('http://localhost:8080/api/users',{
+        headers:{
+          'Authorization':`Bearer ${token}`
+        }
+      });
       const data = await response.json()
       setUsers(data);
 
@@ -231,6 +242,30 @@ const fetchNotification = async () => {
 ],
   };
 
+  const handleBirthday = ()=>{
+    navigate('/birthdays')
+    onClose()
+  }
+
+  const handleWeather = ()=>{
+    navigate('/weather')
+    onClose()
+  }
+
+  
+  const handleReels = ()=>{
+    navigate('/reels')
+    onClose()
+  }
+
+ const widgets= [
+    { id: 1, title: 'Birthdays',icon:<Icon className="w-11 h-11" icon="twemoji:birthday-cake" />, onClick: handleBirthday },
+    { id: 2, title: 'Weather',icon:  <Icon className="w-11 h-11" icon="noto-v1:sun-behind-rain-cloud" />, onClick: handleWeather},
+    { id: 3, title: 'Events',icon:  <Icon className="w-11 h-11" icon="mdi:events" style={{ color: "#ff9500" }} />, onClick: '/notificationsettings'},
+    { id: 4, title: 'Reels',icon:  <Icon className="w-11 h-11" icon="vscode-icons:file-type-video" />, onClick: handleReels },
+    { id: 5, title: 'Blogs',icon:  <Icon className="w-11 h-11" icon="fluent-emoji:newspaper" style={{ color: "#7076d2" }} />, onClick: '/Privacydata' },
+]
+
   const handleIconClick = (id) => {
     setActiveSection(id === activeSection ? null : id);
 
@@ -357,17 +392,17 @@ const fetchNotification = async () => {
     
   return (
     <div className='relative sticky top-0 z-10 bg-gradient-to-tr max-w-[30rem] w-full from-span-start to-span-end'>
-        <nav className='flex to-span-end   px-4 w-full sm:text-md   justify-between items-center h-12 flex-row'>
+        <nav className={`flex to-span-end   px-4 w-full sm:text-md   justify-between items-center h-12 flex-row`}>
         <div className='flex items-center gap-20'>
       <div className='flex items-center'>
         <NavLink to='/newsfeed'><img className='w-40 h-12 ' src={`/${'logo.png'}`} alt='logo' /></NavLink>
       </div>
         </div>
-        <button
+        <NavLink to='/search'><button
               type="submit"
               className=" p-1 bg-white bg-opacity-30 rounded-full text-white focus:outline-none">
               <Icon icon="mingcute:search-line" width="1.2em" height="1.2em"  />
-            </button>
+            </button></NavLink>
         </nav>
     <nav className='flex  px-4 w-full sm:text-md justify-between items-center h-16 flex-row'>
     {/* {activeSection === 'dashboard' && dropdowns.submenu && (
@@ -389,7 +424,6 @@ const fetchNotification = async () => {
             <li key={header.id} className='cursor-pointer'>
               <div className="relative">
                 <NavLink to={header.path}><button
-         
                   className={`relative cursor-pointer py-2 w-7  rounded-full transition-colors duration-500 ease-in-out ${activeSection === header.id ? '' : ''}`}>
                   <span className="">
                     {React.cloneElement(header.icon, {
@@ -401,9 +435,8 @@ const fetchNotification = async () => {
                         width:'1.6rem'
                       },
                     })}
-                             <span className={`absolute top-1 right-0 w-4 h-4 text-xs rounded-full ${header.count > 0 ?'bg-red' : ''} text-white flex items-center justify-center`}> {header.count > 0 ? header.count : ''}</span>
+                    <span className={`absolute top-1 right-0 w-4 h-4 text-xs rounded-full ${header.count > 0 ?'bg-red' : ''} text-white flex items-center justify-center`}> {header.count > 0 ? header.count : ''}</span>
                   </span>
-                
                 </button></NavLink>
                 {activeSection === header.id && header.title==='Friend Request' && (
                   <div ref={dropdownRef} className="absolute top-full overflow-y-auto overflow-x-hidden -right-20 w-[360px] h-[433px] bg-white rounded-md slide-in-down drop shadow-lg z-10 overflow-hidden">
@@ -457,7 +490,7 @@ const fetchNotification = async () => {
                           <div className='flex justify-between items-center'>
                             <div className='flex gap-2 items-center'>
                               <div>
-                          <img className='rounded-full w-8 h-8' alt='alt' src={`http://localhost:8080/posts${item.profileImagePath}`} />
+                          <img className='rounded-full w-8 h-8' alt='alt' src={`http://localhost:8080${item.profileImagePath}`} />
                           </div>
                           <div className='flex flex-col'>
                             <div className='hover:text-cta'>{item.name}</div> 
@@ -534,35 +567,34 @@ const fetchNotification = async () => {
         
         </div> */}
         <NavLink to='/menu' ><div className='flex items-center gap-4'>
-        <img src={`http://localhost:8080/posts${user?.profileImagePath}`} data-tooltip-id="my-tooltip" data-tooltip-content="Profile" alt='' className='cursor-pointer rounded-full h-9 w-9 bg-gray-300'/>
+        <img src={`http://localhost:8080${user?.profileImagePath}`} data-tooltip-id="my-tooltip" data-tooltip-content="Profile" alt='' className='cursor-pointer rounded-full h-9 w-9 bg-gray-300'/>
       {/* <p data-tip="Profile" className='text-white w-28 truncate font-semibold'>{user.name}</p>  */}
       </div></NavLink>
       </div>
-{activeSection === 'settings' && dropdowns.submenu && (
-  <div ref={dropdownRef} className="absolute duration-500 slide-in-down top-16 right-0 w-52 py-2 flex flex-col gap-4 justify-center bg-white shadow-lg ">
+{/* {activeSection === 'settings' && dropdowns.submenu && (
+  <div ref={dropdownRef} className={`absolute ${isDarkMode ? 'dark-bg' : 'white-bg'} bg-red duration-500 slide-in-down top-16 right-0 w-52 py-2 flex flex-col gap-4 justify-center shadow-lg `}>
     {dropdowns.submenu.map((item) => (
       <NavLink to={item.path}><div key={item.id} onClick={closeDropdown} className="cursor-pointer  gap-1 flex items-center py-2 px-4 hover:bg-gray-100">
       <span className='p-2 rounded-full bg-white'>{item.icon}</span>  <span className='text-sm '>{item.title}</span>
       </div></NavLink>
     ))}
   </div>
-)}
+)} */}
  {isSidebarOpen && (
-<div ref={sidebarRef} className="absolute bg-white flex flex-wrap w-64 h-96 p-4 shadow-lg top-16 right-0 justify-start">
-        {/* <ul className='shadow-lg p-4'>
-        <NavLink to={ `/user/${userId}`}><div className='flex items-center gap-4'>
-        <img src={`http://localhost:8086${user.profileImagePath}`} data-tooltip-id="my-tooltip" data-tooltip-content="Profile" alt='' className='cursor-pointer rounded-full h-9 w-9 bg-gray-300'/>
-      <p data-tip="Profile" className=' w-28 truncate font-semibold'>{user.name}</p> 
-      </div></NavLink>
-        </ul> */}
+  <div ref={sidebarRef} className={`absolute ${isDarkMode ? 'gray-bg' : 'white-bg'} flex flex-wrap w-72 h-96 p-4 shadow-lg top-28 right-0 justify-between gap-2`}>
+    <div className='flex flex-wrap h-max gap-6'>
+{widgets.map((widget)=>(
+  <div className='flex flex-col  items-center'>
+ <div onClick={widget.onClick}>{widget.icon} </div> 
+ <div className='text-xs' onClick={widget.onClick}>{widget.title} </div> 
+  </div>
+))}
+  
+  </div>
+</div>
 
-        <Icon className='w-16 h-11 flex-shrink-0' icon="twemoji:birthday-cake" />
 
-        <Icon className='w-11 h-11 ' icon="noto-v1:sun-behind-rain-cloud" />
-        <Icon className='w-11 h-11 ' icon="mdi:events"  style={{color: '#ff9500'}} />
-        <Icon className='w-11 h-11  ' icon="vscode-icons:file-type-video" />
-        <Icon  className='w-11 h-11 ' icon="emojione-monotone:newspaper"  style={{color: '#7076d2'}} />
-    </div>)
+)
 
 }
         <Tooltip id="my-tooltip" />
@@ -571,7 +603,6 @@ const fetchNotification = async () => {
           {header.title}
         </Tooltip>
       ))}
-      
     </nav>
     </div>
   );

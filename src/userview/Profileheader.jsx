@@ -34,6 +34,14 @@ const Profileheader = () => {
   const [isFriends,setIsFriends] = useState()
   const [options,setOptions] = useState(false)
   const [profilepic,setProfilepic] = useState(profile?.user.profileImagePath)
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem("darkMode") === "true";
+    setIsDarkMode(savedMode);
+  }, []);
+
+  
 
   const handleOptions = ()=>{
     setOptions(!options)
@@ -134,11 +142,12 @@ const Profileheader = () => {
           }
         }
         const fetchUserDetails = async () => {
+          const token = localStorage.getItem('token')
           try {
             const response = await axios.get(`http://localhost:8080/api/users/${userID}`, {
               method: 'GET',
               headers: {
-          
+          'Authorization':`Bearer ${token}`
               },
             });
             setUser(response.data);
@@ -181,9 +190,13 @@ const Profileheader = () => {
         };
 
         const fetchProfile = useCallback(async()=>{
+          const token = localStorage.getItem('token')
           try{
             const response = await fetch(`http://localhost:8080/home/api/aggregate/${userID}`, {
               method: 'GET',
+              headers:{
+                'Authorization': `Bearer ${token}`
+              }
             });
             if(response.ok){
               const data = await response.json()
@@ -299,7 +312,7 @@ const fetchRequest = async () => {
             const response = await fetch(`http://localhost:8080/follows/follow/${userId}/${userID}`,{
               method:'POST',
               headers:{
-                'Authorization':`bearer${token}`
+                'Authorization':`Bearer ${token}`
               }
             })
             if(response.ok){
@@ -377,7 +390,7 @@ const fetchRequest = async () => {
             const response = await fetch(`http://localhost:8080/follows/unfollow/${userId}/${userID}`,{
               method:'DELETE',
               headers:{
-                'Authorization':`bearer${token}`
+                'Authorization':`Bearer ${token}`
               }
             })
             if(response.ok){
@@ -446,7 +459,7 @@ style={{
   <div className='flex mt-4 px-4 w-full items-center justify-between'><p className='text-lg font-semibold'>Change Profile picture</p><div onClick={closeImageForm} className='p-1 cursor-pointer hover:bg-red hover:text-white rounded-full bg-gray-100'><IoClose className='w-5 h-5' /></div></div>
   <div className='w-full h-full flex flex-col gap-4 items-center justify-center'>
     <div className='flex cursor-pointer justify-center items-center gap-8'>
-<img className='h-28 w-28 rounded-full' src={`http://localhost:8080/posts${profile?.user.profileImagePath}`} alt={`http://localhost:8080/posts${profile?.user.profileImagePath}`}/><label className="relative cursor-pointer rounded-md px-3 py-2  border border-cta text-white bg-cta border">
+<img className='h-28 w-28 rounded-full' src={`http://localhost:8080${profile?.user.profileImagePath}`} alt={`http://localhost:8080${profile?.user.profileImagePath}`}/><label className="relative cursor-pointer rounded-md px-3 py-2  border border-cta text-white bg-cta border">
 <button className='cursor-pointer text-sm'>Upload an Image</button>
 <input type="file" accept='image/*' onChange={handleImageChange} className="absolute inset-0 opacity-0 cursor-pointer" />
 </label></div>
@@ -491,13 +504,13 @@ style={{
 
 <div className='max-w-[30rem] w-full flex items-center justify-center'>
 <div className='flex flex-col w-full flex items-center justify-center'>
-  <div style={{backgroundImage:`url('http://localhost:8080/posts${profile?.user.bannerImagePath}')`}} alt={profile?.user.bannerImagePath} className='flex flex-col relative border w-full h-44 bg-cover bg-center  bg-no-repeat gap-4 justify-end'>
+  <div style={{backgroundImage:`url('http://localhost:8080${profile?.user.bannerImagePath}')`}} alt={profile?.user.bannerImagePath} className='flex flex-col relative border w-full h-44 bg-cover bg-center  bg-no-repeat gap-4 justify-end'>
     {parseInt(userID) === userId && ( <div onClick={openCoverForm} className='absolute text-sm right-2 top-2 flex gap-1 items-center rounded-md cursor-pointer px-2 py-1 bg-white bg-opacity-40'><Icon icon="mdi:camera" width="1.2em" height="1.2em"  style={{color: ''}} /><span className='font-semibold'>Change cover photo</span> </div>
     )} 
 
 <div className='relative w-max flex p-4 items-center'>
        <div>
-        <img className='w-20 border-4 border-gray-300e h-20 rounded-full' alt='' src={`http://localhost:8080/posts${profile?.user.profileImagePath}`} /></div> 
+        <img className='w-20 border-4 border-gray-300e h-20 rounded-full' alt='' src={`http://localhost:8080${profile?.user.profileImagePath}`} /></div> 
        { parseInt(userID) === userId && <div onClick={openImageForm} className='absolute justify-end bottom-4 right-4 flex text-cta hover:bg-cta hover:text-white border border-cta cursor-pointer items-center justify-center w-min p-1 rounded-full bg-white'><Icon icon="mdi:camera" width="1em" height="1em"  style={{color: ''}} /></div>}
         </div>
         
@@ -548,7 +561,7 @@ style={{
     </button>
           )}
         </div>)}
-        <div className='flex gap-6 overflow-x-auto whitespace-nowrap max-w-full scrollbar-hidden'>
+        <div className={`flex gap-6 overflow-x-auto  ${isDarkMode ? 'gray-bg':'white-bg'} whitespace-nowrap max-w-full scrollbar-hidden`}>
   {menu.map((items) => (
     <div className='py-2 px-4' key={items.id}>
       <NavLink to={items.path} className={`text-md hover:text-cta font-semibold ${isActive(items.path) ? 'active-link' : ''}`}>

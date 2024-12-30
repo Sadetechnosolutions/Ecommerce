@@ -61,12 +61,14 @@ const handleSendOtp = async (e) => {
   setError(''); // Clear previous errors if any
 
   const payload = { email };
+  const token = localStorage.getItem('token')
   try {
     console.log('Sending payload:', JSON.stringify(payload));
-    const response = await fetch('http://localhost:8081/api/auth/forgot-password', {
+    const response = await fetch('http://localhost:8080/api/auth/forgot-password', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization':`Bearer ${token}`
       },
       body: JSON.stringify(payload),
     });
@@ -106,13 +108,14 @@ const handleVerifyOtp = async (e) => {
       newPassword:user.password,
       confirmPassword:user.confirmPassword,
     };
-
+  const token = localStorage.getItem('token')
   try {
     console.log('Sending data:', JSON.stringify(payload));
-    const response = await fetch('http://localhost:8081/api/auth/reset-password', {
+    const response = await fetch('http://localhost:8080/api/auth/reset-password', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Authorization' : `Bearer ${token}`
       },
       body: JSON.stringify(payload),
       credentials: 'include'

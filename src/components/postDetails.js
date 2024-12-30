@@ -3,19 +3,22 @@ import InputEmoji from 'react-input-emoji';
 import { Icon } from "@iconify/react/dist/iconify.js";
 import { useSelector,useDispatch } from "react-redux";
 import { selectPost,removeSelected } from '../slices/postslice';
+import { useNavigate } from "react-router-dom";
+import MapSelector from './mapselector';
 import Modal from 'react-modal'
+
 const Postinfo = ()=>{
+    const navigate = useNavigate()
     const dispatch = useDispatch()
     const { selected } = useSelector((state) => state.post);
     const [file, setFile] = useState(null);
     const [postType, setPostType] = useState('');
     const [showMap, setShowMap] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState(null);
-    const [user,setUser] = useState()
     const [description,setDescription] = useState('')
     const userId = useSelector((state) => state.auth.userId);
     const [visibility, setVisibility] = useState('PERSONAL');
-    const [privacy,setPrivacy] =useState('PUBLIC')
+    const [privacy, setPrivacy] =useState('PUBLIC')
     const [privacydropdown,setPrivacydropdown] = useState(false)
     // Handle the change event
     const handleChange = (event) => {
@@ -47,65 +50,78 @@ const Postinfo = ()=>{
     };
 
     const handleSubmit = async (event) => {
-        if (!file && !description) {
-            alert("Please provide either a text description or a photo/video.");
-            return; // Exit early if neither is present
-          }
-        event.preventDefault();
-        const finalPostType = file ? postType : 'TEXT';
-        // Create a FormData object for the file uploads and form data
-        const formDataObj = new FormData();
-        
-        // Append userId and postType to FormData
-        formDataObj.append('userId', userId);
-        formDataObj.append('postType', finalPostType);
-        formDataObj.append('privacySetting', privacy);
-        formDataObj.append('postVisibility', visibility);
-        // Append the selected file with the correct key
-        if (file) {
+      event.preventDefault(); // Uncomment to prevent the default form submission behavior.
+  
+      // Check if there is a file or description before proceeding
+      if (!file && !description) {
+          alert("Please add either a file or a description to submit your post.");
+          return; // Exit the function if neither is provided.
+      }
+  
+      const finalPostType = file ? postType : 'TEXT';
+      // Create a FormData object for the file uploads and form data
+      const formDataObj = new FormData();
+      
+      // Append userId and postType to FormData
+      formDataObj.append('userId', userId);
+      formDataObj.append('postType', finalPostType);
+      formDataObj.append('privacySetting', privacy);
+      formDataObj.append('postVisibility', visibility);
+  
+      // Append the selected file with the correct key
+      if (file) {
           if (postType === 'IMAGE') {
-            formDataObj.append('imageFile', file); // Append image file
+              formDataObj.append('imageFile', file); // Append image file
           } else if (postType === 'VIDEO') {
-            formDataObj.append('videoFile', file); // Append video file
+              formDataObj.append('videoFile', file); // Append video file
           }
-          // Add other conditions if needed
-        }
-        if (description) {
+      }
+  
+      // Append description if it exists
+      if (description) {
           formDataObj.append('description', description); // Append description to FormData
-        }
-        // Append location if selected
-        if (selectedLocation) {
+      }
+  
+      // Append location if selected
+      if (selectedLocation) {
           formDataObj.append('location', JSON.stringify(selectedLocation)); // Convert location object to JSON string
-        }
-    
-        // Log the FormData object for debugging
-        for (let [key, value] of formDataObj.entries()) {
+      }
+  
+      // Log the FormData object for debugging
+      for (let [key, value] of formDataObj.entries()) {
           console.log(`${key}:`, value);
-        }
-    
-        try {
+      }
+  
+      const token = localStorage.getItem('token');
+      try {
           const response = await fetch('http://localhost:8080/posts', {
-            method: 'POST',
-            body: formDataObj,
+              method: 'POST',
+              body: formDataObj,
+              headers: {
+                  'Authorization': `Bearer ${token}`,
+              },
           });
-    
+  
           if (response.ok) {
-            setFile(null);
-            setPostType('');
-            setDescription('');
-            setSelectedLocation(null);
-            dispatch(selectPost(null));
-            const data = await response.json();
-            console.log('API Response Data:', data); // Log the response for debugging
+              
+              setFile(null);
+              setPostType('');
+              setDescription('');
+              setSelectedLocation(null);
+              dispatch(selectPost(null));
+              navigate('/newsfeed')
+              const data = await response.json();
+              console.log('API Response Data:', data); // Log the response for debugging
           } else {
-            // Log detailed error message
-            const errorText = await response.text();
-            console.error('Error:', response.status, errorText);
+              // Log detailed error message
+              const errorText = await response.text();
+              console.error('Error:', response.status, errorText);
           }
-        } catch (error) {
+      } catch (error) {
           console.error('Error:', error);
-        }
-      };
+      }
+  };
+  
 
     const img = <Icon className='w-6 h-5' icon="ph:image" />;
     const video = <Icon className='w-6 h-5' icon="bx:video" />;
@@ -127,6 +143,11 @@ const Postinfo = ()=>{
           reader.readAsDataURL(selectedFile); // Read the file as a data URL
         }
       };
+      const handleSelectLocation = (location) => {
+        setSelectedLocation(location);
+        setShowMap(false); // Close the map after selecting the location
+      };
+      
       const renderMedia = () => {
         if (!selected) return null;
         if (selected.type && selected.type.startsWith('image')) {
@@ -178,13 +199,9 @@ const Postinfo = ()=>{
     </div>
     <div onClick={handleDropdown} className="rounded-full p-1 bg-gray-300">{renderPrivacyIcon()}</div>
     </div>
-    <InputEmoji />
+    <InputEmoji value={description} onChange={(text)=>setDescription(text)} />
           <div className='flex gap-3'>
-        <Icon
-          className='w-5 h-5 cursor-pointer'
-          icon="carbon:location"
-          onClick={() => setShowMap(true)}
-        />
+
         {icons.map((item) => (
           <div className='relative cursor-pointer' key={item.id}>
             <label className='flex cursor-pointer'>
@@ -200,6 +217,17 @@ const Postinfo = ()=>{
         ))}
       </div>
       <div>{renderMedia()}</div>
+      <div          onClick={() => setShowMap(true)} className="flex gap-1 items-center">        <Icon
+          className='w-5 h-5 cursor-pointer'
+          icon="carbon:location"
+ 
+        /> Add Location</div>
+              {showMap && (
+        <MapSelector
+          onSelectLocation={handleSelectLocation}
+          onClose={() => setShowMap(false)}
+        />
+      )}
             <button onClick={handleSubmit} className='bg-cta p-2 cursor-pointer text-white text-sm font-semibold rounded-md'>
         Post
       </button>

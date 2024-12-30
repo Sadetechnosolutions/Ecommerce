@@ -8,42 +8,34 @@ import Modal from 'react-modal';
 import { Icon } from '@iconify/react/dist/iconify.js';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useDispatch,useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { setAuth } from '../slices/authslice';
 import { fetchUserProfile } from '../admindashboard/fetchuser';
-
+import CryptoJS from 'crypto-js';
 
 const Signin = () => {
     const [user,setUser] = useState({ email: '', password:'',loginmail:''});
-    const [details,setDetails] = useState();
     const dispatch = useDispatch();
     const [otp, setOtp] = useState(Array(6).fill(''));
-    const userId = useSelector((state) => state.auth.userId);
     const [signinOtp,showOtp] = useState(false);
     const [otpPage,showOtpPage] = useState(false);
     const [languages,setLanguages] = useState(false);
-    const [language,setLanguage] = useState(null);
+    const [language,setLanguage] = useState(null)
     const [active,setActive] = useState(false);
     const [seconds, setSeconds] = useState(300)
     const [error,setError] = useState('')
+    const [userId,setuserId] = useState(null)
     const navigate = useNavigate()
 
-    const SECRET_KEY = process.env.REACT_APP_SECRET_KEY;
+    // const SECRET_KEY = process.env.REACT_APP_SECRET_KEY;
 
     const handleChange = (e) => {
+      setError('')
         const { name, value } = e.target;
           setUser({ ...user, [name]: value });
       };
-      const handleShowOTP = ()=>{
-        showOtp(true);
-      }
       const handleCloseOTP = ()=>{
         showOtp(false);
-      }
-      const handleSelectLanguage = (lang)=>{
-        setLanguage(lang);
-        setActive(false);
-        handleShowLanguages(false);
       }
       const handleotpPage = ()=>{
         showOtpPage(true);
@@ -52,15 +44,25 @@ const Signin = () => {
       const handlecloseotpPage = ()=>{
         showOtpPage(false);
       }
-    const openHome = ()=>{
-       navigate('/newsfeed')
-    }
+
     const handleShowLanguages = ()=>{
         setLanguages(!languages);
     }
     const handleActive = ()=>{
         setActive(!active);
     }
+
+    const encryptData = (password) => {
+      const key = CryptoJS.enc.Utf8.parse(process.env.REACT_APP_SECRET_KEY); // Use a secure key
+      const iv = CryptoJS.enc.Utf8.parse(process.env.REACT_APP_AES_IV); // Use a secure IV (Initialization Vector)
+      const encrypted = CryptoJS.AES.encrypt(password, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7,
+      });
+      return encrypted.toString();
+    };
+
     const info = [
     {
         id:1,
@@ -116,7 +118,33 @@ const Signin = () => {
     
         if (response.ok) {
           const data = await response.json();
-          setDetails(data);
+          return data;
+        }
+         else {
+          console.error('Failed to fetch user profile:', response.status);
+          return null;
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        return null;
+      }
+    };
+
+    const fetchuser = async () => {
+      const token = localStorage.getItem('token');
+      const userProfile = await fetchUserProfile();
+      try {
+        const response = await fetch(`http://localhost:8080/api/users/getBy-email?email=${userProfile.email}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+    
+        if (response.ok) {
+          const data = await response.json();
+          setuserId(data.userid)
+          console.log(data.userid)
           return data;
         }
          else {
@@ -139,7 +167,8 @@ const Signin = () => {
         try {
           console.log('Sending payload:', JSON.stringify(payload));
           // Send the OTP request
-          const response = await fetch('http://localhost:8081/api/auth/forgot-password', {
+
+          const response = await fetch('http://localhost:8080/api/auth/forgot-password', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -150,29 +179,50 @@ const Signin = () => {
           console.log('Response headers:', response.headers);
       
           if (response.ok) {
-            const data = await response.json();
             handleotpPage();
             toast.success('OTP sent successfully! Please check your email.');
+            console.log(1);
             // Handle success based on your backend response
             // Example: If the response contains a success message
             if (!response.ok) {
             toast.error('Incorrect Username/Password');
+            console.log(2);
             } else {
               setError('Incorrect Username/Password');
+              console.log(3);
             }
           } else {
             // Handle response errors
             const errorText = await response.text();
             toast.error(`Error: ${errorText}`);
+            console.log(4);
           }
         } catch (error) {
           console.error('Error sending OTP:', error);
           toast.error('An error occurred while sending OTP.');
+          console.log(5);
         }
       };
-      
+
+      function stringToAsciiInt(inputString) {
+        // Convert each character to its ASCII value
+        const asciiValues = Array.from(inputString).map(char => char.charCodeAt(0));
+    
+        // If you want to convert ASCII values to a single integer, you can join them
+        // Note: This can lead to very large numbers, so consider using BigInt for large strings.
+        const asciiAsString = asciiValues.join('');
+        const asciiAsInt = Number(asciiAsString); // Convert to a number (or use BigInt(asciiAsString))
+    
+        return { asciiValues, asciiAsInt };
+    }
+
       const handleSubmit = async (e) => {
         e.preventDefault(); // Prevent default form submission
+
+        // const payload={
+        //   email: user.email,
+        //   password: encryptData(user.password)
+        // }
         // Validate user input
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       
@@ -187,16 +237,21 @@ const Signin = () => {
           toast.error('Invalid email format.');
           return;
         }
-      
+        console.log(JSON.stringify(CryptoJS.enc.Utf8.parse(process.env.REACT_APP_SECRET_KEY)))
+        console.log(JSON.stringify(CryptoJS.enc.Utf8.parse(process.env.REACT_APP_AES_IV)))
+        console.log(encryptData(user.password))
+
+
         try {
-          console.log(user);
-          const response = await fetch('http://localhost:8081/api/auth/login', {
+          // const token = process.env.REACT_APP_GITHUB_TOKEN;
+          const response = await fetch('http://localhost:8080/api/auth/login', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify(user),
+            body:JSON.stringify(user),
           });
+
           console.log('Response status:', response.status);
           console.log('Response headers:', response.headers);
           if (response.ok) {
@@ -207,25 +262,27 @@ const Signin = () => {
               console.log('Form data submitted successfully');
               const userProfile = await fetchUserProfile(data.token);
               const userdetails = await fetchUserdata();
-              if (userdetails.some(user => user.userid === userProfile.id)) {
-                dispatch(setAuth({ userId: userProfile.id, token: data.token }));
+              const fetchedUser = await fetchuser(); // Await fetchuser
+
+              // const userIdAsciiInt = stringToAsciiInt(userProfile.id).asciiAsInt
+              if (userdetails.some(user => user.email === userProfile.email)) {
+                dispatch(setAuth({ userId: fetchedUser.id, token: data.token }));
                 setTimeout(() => navigate('/newsfeed'), 5000);
                 toast.success(`Welcome ${userProfile.name}`);
                 console.log(userProfile.id);
                 setError('');
               } else if (userProfile) {
-                dispatch(setAuth({ userId: userProfile.id, token: data.token }));
-                console.log('Navigating to /gw');
+                // dispatch(setAuth({ userId: user.id, token: data.token }));
+                console.log('Navigating to /profiledetails');
                 toast.success(`Welcome ${userProfile.name}`);
-                setTimeout(() => navigate('/gw'), 5000);
+                setTimeout(() => navigate('/profiledetails'), 5000);
                 console.log(userProfile.id);
                 setError('');
               }
             } else {
-              toast.error('Invalid credentials. Please try again.');
+                setError('Invalid credentials. Please try again.');
             }
           } else {
-            const errorText = await response.text();
             toast.error(`Invalid Email/Password`);
             setError('Incorrect Username/Password');
           }
@@ -234,7 +291,11 @@ const Signin = () => {
           toast.error('An error occurred while fetching data');
         }
       };
-      
+      const handleSelectLanguage = (lang)=>{
+        setLanguage(lang);
+        setActive(false);
+        handleShowLanguages(false);
+      }
   const handleOTPChange = (e, index) => {
     const { value } = e.target;
     // Ensure the value is a single digit or empty
@@ -253,14 +314,14 @@ const Signin = () => {
     if (otp.some(field => field === '')) {
       toast.error('Please enter the complete OTP.');
       return;
-    }
+    } 
     const payload = {
         email: user.loginmail,
         otp: otp.join('')  // Assuming OTP is an array of strings
       };
     try {
       console.log('Sending data:', JSON.stringify(payload));
-      const response = await fetch('http://localhost:8081/api/auth/login-with-otp', {
+      const response = await fetch('http://localhost:8080/api/auth/login-with-otp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -282,8 +343,7 @@ const Signin = () => {
         if (userProfile) {
           toast.success(`Welcome ${userProfile.name}`);
           dispatch(setAuth({ userId: userProfile.userId, }));
-          setTimeout(() => navigate('/gw'), 5000);
-    
+          setTimeout(() => navigate('/profiledetails'), 5000);
         }
         else {
           toast.error('Failed to fetch user profile');
@@ -296,9 +356,9 @@ const Signin = () => {
       }
     } catch (error){
       console.error('Error submitting data:', error);
-
     }
   };
+
   const handleKeyDown = (e, index) => {
     if (e.key === 'Backspace' && !otp[index] && index > 0) {
         // Move focus to the previous input if the current input is empty and backspace is pressed
@@ -317,6 +377,7 @@ const Signin = () => {
 
     return () => clearInterval(intervalId); // Cleanup on component unmount
   }, [otpPage, seconds]);
+
     return (
         <>
          <div style={{fontFamily:'revert-layer'}}  className="relative max-w-[30rem] w-full h-[41.1rem]  justify-center items-center bg-gradient-to-tr from-span-start to-span-end flex flex-col ">

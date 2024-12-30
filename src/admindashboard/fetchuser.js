@@ -1,8 +1,9 @@
 import React from "react";
 
-export const fetchUserProfile = async (token) => {
+export const fetchUserProfile = async () => {
+  const token = localStorage.getItem('token');
     try {
-      const response = await fetch('http://localhost:8081/api/auth/adminuser/get-profile', {
+      const response = await fetch('http://localhost:8080/api/auth/adminuser/get-profile', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`

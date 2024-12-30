@@ -2,7 +2,7 @@ import React from "react";
 
 export const fetchUserdata = async (token) => {
     try {
-      const response = await fetch('http://localhost:8082/api/users', {
+      const response = await fetch('http://localhost:8080/api/users', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`

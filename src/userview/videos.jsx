@@ -23,6 +23,12 @@ const Videos = () => {
   const { userID } = useParams();
   const [videos,setVideos] = useState();
   const [file,setFile] = useState(null)
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem("darkMode") === "true";
+    setIsDarkMode(savedMode);
+  }, []);
 
   const openCreateAlbum = ()=>{
     showCreateAlbum(true);
@@ -101,7 +107,7 @@ const handleImageChange = (event) => {
               }
             };
   return (
-    <div className='flex max-w-[30rem] w-full '>
+    <div className={`flex max-w-[30rem] ${isDarkMode? 'gray-bg' : 'white-bg'} w-full`}>
           <Modal appElement={document.getElementById('root')} style={{
           content: {
           top: '50%',
@@ -194,8 +200,8 @@ const handleImageChange = (event) => {
               <input className=' absolute opacity-0' accept='video/*' type='file'/>
             </label>
           </div> */}
-          <div className='flex flex-wrap gap-8 p-2'>
-            { parseInt(userID)=== userId && <div onClick={openuploadVideo} className='w-28 h-28 flex bg-gray-200 cursor-pointer items-center justify-center'>
+          <div className='flex flex-wrap gap-2 p-2'>
+            { parseInt(userID)=== userId && <div onClick={openuploadVideo} className={`w-28 h-28 flex ${isDarkMode ? 'dark-bg ' :' bg-gray-200 '} rounded-md cursor-pointer items-center justify-center`}>
             <label className='cursor-pointer'>
               <span className='flex flex-col text-sm items-center gap-2'><Icon className='text-cta' icon="zondicons:add-solid" width="1.2em" height="1.2em"   />Upload</span>
             </label>

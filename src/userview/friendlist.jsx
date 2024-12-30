@@ -18,6 +18,13 @@ const Friends = () => {
   const [selectedPrivacy, setSelectedPrivacy] = useState('PUBLIC'); // Default value
   const [profile,setProfile] = useState()
   const [privacydata,setPrivacyData] = useState()
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem("darkMode") === "true";
+    setIsDarkMode(savedMode);
+  }, []);
+
 
   const fetchProfile = useCallback(async()=>{
     try{
@@ -37,9 +44,13 @@ const Friends = () => {
 
 
   const fetchdata = useCallback(async()=>{
+    const token = localStorage.getItem('token')
     try{
       const response = await fetch(`http://localhost:8080/api/users/${userID}`, {
         method: 'GET',
+        headers:{
+          'Authorization':`Bearer ${token}`
+        }
       });
       if(response.ok){
         const data = await response.json()
@@ -53,7 +64,7 @@ const Friends = () => {
 
   useEffect(()=>{
     fetchdata()
-  },[fetchdata])
+  },[])
 
 
 //   const options = [{
@@ -94,10 +105,14 @@ const changePrivacy = async(privacy)=>{
    id:userId,
    visibility:selectedPrivacy
   }
+  const token = localStorage.getItem('token')
   try {
     const response = await fetch(`http://localhost:8080/api/users/${userId}/visibility?visibility=${privacy}`, {
       method: 'PATCH',
-      body:JSON.stringify(payload)
+      body:JSON.stringify(payload),
+      headers:{
+        'Authorization':`Bearer ${token}`
+      }
     });
 
     if (response.ok) {
@@ -212,18 +227,18 @@ const isCurrentUser = parseInt(userID) === userId;
   
     useEffect(()=>{
       fetchProfile()
-    },[fetchProfile])
+    },[])
 
     useEffect(()=>{
       fetchfriends()
-    },[fetchfriends])
+    },[])
 
     useEffect(()=>{
       fetchMyfriends()
-    },[fetchMyfriends])
+    },[])
  return (
-    <div className=' flex max-w-[30rem] w-full items-center justify-center'>
-      <div className='w-full drop bg-white h-auto px-2 flex-col '>
+    <div className={`flex max-w-[30rem]  ${isDarkMode ? 'gray-bg' : 'white-bg'} w-full items-center justify-center`}>
+      <div className='w-full drop h-auto px-2 flex-col '>
       <div className="flex items-center p-4 justify-between">
         <div className='flex gap-2 items-center'>
       <span className='text-md font-semibold'>Friends ({friends?.friendCount})</span>
@@ -262,7 +277,7 @@ const isCurrentUser = parseInt(userID) === userId;
           </div> */}
           </div>
         </div>
-        <div className='flex flex-wrap gap-8 items-center p-4'>
+        <div className='flex flex-wrap gap-8 w-full items-center p-4'>
         {(privacydata?.visibility === 'PUBLIC' || 
   (privacydata?.visibility === 'FRIENDS' && 
   (friends?.friends?.some(f => f.id === userId) || isFriends || friends?.userId === userId))) && 
@@ -272,18 +287,18 @@ const isCurrentUser = parseInt(userID) === userId;
     const formattedDate = date.toLocaleDateString('en-US', options);
 
     return (
-      <div key={friend.id}>
-        <div className='flex flex-col h-72 rounded-md border border-gray-200 rounded-md w-[17.6rem]'>
+      <div className='w-full' key={friend.id}>
+        <div className={`flex flex-col h-72 ${isDarkMode ? 'gray-bg' : 'white-bg'} rounded-md border border-gray-200 rounded-md `}>
           <div className="relative">
-            <img className="w-full h-28" src={`http://localhost:8082${friend.bannerImagePath}`} alt="" />
+            <img className="w-full h-28" src={`http://localhost:8080${friend.bannerImagePath}`} alt="" />
             <div className="absolute -mt-10 ml-2 flex items-center">
-              <img className="rounded-full w-16 h-16 border-2 border-white" alt="" src={`http://localhost:8082${friend.profileImagePath}`} />
+              <img className="rounded-full w-16 h-16 border-2 border-white" alt="" src={`http://localhost:8080${friend.profileImagePath}`} />
             </div>
           </div>
           <div className='flex px-4 flex-col mt-5 gap-3 py-4'>
             <div className='flex justify-between items-start'>
               <div className='flex items-start w-full flex-col'>
-                <span className='text-md font-semibold'>{friend.name} <span className='text-xs font-normal py-0.5 rounded-lg '>Since <span className='px-1 bg-yoi'> {formattedDate}</span> </span></span>
+                <span className='text-md font-semibold'>{friend.name} <span className='text-xs font-normal py-0.5 rounded-lg '>Since <span className='px-1 bg-cta rounded-md'> {formattedDate}</span> </span></span>
                 <div className='w-full items-center justify-between'>
                   <span className='text-xs'>{friend.place}</span>
                   <span> </span>

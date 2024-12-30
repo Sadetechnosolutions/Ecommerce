@@ -6,6 +6,12 @@ const Friendrequest = ()=>{
     const [request,setRequest] =useState()
     const userId = useSelector((state)=>state.auth.userId)
     const [requestCount,setRequestCount] = useState()
+    const [isDarkMode, setIsDarkMode] = useState(false);
+
+    useEffect(() => {
+      const savedMode = localStorage.getItem("darkMode") === "true";
+      setIsDarkMode(savedMode);
+    }, []);
     
     const fetchRequest = async () => {
         try {
@@ -93,9 +99,9 @@ const Friendrequest = ()=>{
         },[fetchRequest])
     return(
 <>
-<div className="max-w-[30rem] flex flex-col w-full bg-white">
+<div className={`max-w-[30rem] flex ${isDarkMode? 'gray-bg':'white-bg'}  h-[calc(100vh-101px)] flex-col w-full`}>
 
-  <div className='flex absolute sticky top-0 bg-white justify-between items-center text-sm py-2 px-4'><p>Requests</p></div>
+  <div className='flex absolute sticky top-0 justify-between items-center text-sm py-2 px-4'><p>Requests</p></div>
   {request?.pendingCount===0 && (
     <>
     <div className='flex items-center justify-center'>

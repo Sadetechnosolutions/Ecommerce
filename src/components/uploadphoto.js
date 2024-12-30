@@ -99,11 +99,14 @@ const Postphoto = ({ close,file }) => {
     for (let [key, value] of formDataObj.entries()) {
       console.log(`${key}:`, value);
     }
-
+    const token = localStorage.getItem('token')
     try {
       const response = await fetch('http://localhost:8080/posts', {
         method: 'POST',
         body: formDataObj,
+        headers:{
+          'Authorization':`Bearer ${token}`
+        }
       });
 
       if (response.ok) {

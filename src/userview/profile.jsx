@@ -22,11 +22,22 @@ const Profile = () => {
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
   };
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem("darkMode") === "true";
+    setIsDarkMode(savedMode);
+  }, []);
+
   
   const fetchUserName = useCallback(async () => {
+    const token = localStorage.getItem('token')
     try {
       const response = await axios.get(`http://localhost:8080/api/users/${userID}`, {
         method: 'GET',
+        headers:{
+          'Authorization':`Bearer ${token}`
+        }
       });
       setUserdetail(response.data);
     } catch (error) {
@@ -92,9 +103,9 @@ const Profile = () => {
 }]
     }
   return (
-    <div className='flex max-w-[30rem] w-full flex-col'>
+    <div className={`flex max-w-[30rem] w-full ${isDarkMode ? 'dark-bg':'white-bg'} gap-2 flex-col`}>
     <div className='flex flex-col gap-4 items-center justify-center'>
-  <div className='flex py-2 px-6 drop bg-white shadow-lg w-full  rounded-md flex-col'>
+  <div className={`flex py-2 px-6  ${isDarkMode ? 'gray-bg':'white-bg'} drop shadow-lg w-full flex-col`}>
     <div className='flex gap-1 items-center justify-between py-4 border-b border-gray-170 '>
       <span className='font-semibold text-md'>Personal Info</span><span data-tooltip-id="my-tooltip" data-tooltip-content="Edit Personal info" className='flex cursor-pointer gap-1'><Icon onClick={openEditprofile} icon="bx:edit" width="1.3em" height="1.3em" style={{color:'gray'}} /></span>
     </div>
@@ -213,7 +224,7 @@ const Profile = () => {
     </div>
   </div>
   <div style={{ scrollbarWidth: 'none', '-ms-overflow-style': 'none' }} className='flex xs:flex-col text-sm flex-col overflow-auto overflow-x-hidden w-full gap-8'>
-  <div className='flex  px-6 drop py-4  shadow-lg rounded-md h-auto  bg-white flex-col'>
+  <div className={`flex  px-6 drop py-4  ${isDarkMode ? 'gray-bg':'white-bg'} shadow-lg h-auto flex-col`}>
   <div className='flex gap-1 items-center justify-between py-4 border-b border-gray-170 '>
       <span className='font-semibold text-[1rem]'>General Info</span> <span data-tooltip-id='my-tooltip' data-tooltip-content='Edit General info' onClick={openEditpersonal} className='flex cursor-pointer gap-1'><Icon icon="bx:edit" width="1.6em" height="1.6em" style={{color:'gray'}} /></span>
     </div>
@@ -304,7 +315,7 @@ const Profile = () => {
    </div>
    <div className='flex gap-4'>
 {social.media.map((socialmedia)=>(
-<Link to={socialmedia.link}><div className='bg-gray-200 p-2 hover:bg-cta hover:text-white cursor-pointer items-center duration-500 ease-in-ease-out rounded-full'>{socialmedia.icon}</div></Link>
+<Link to={socialmedia.link}><div className={`bg-gray-200 text-cta p-2 hover:bg-cta hover:text-white cursor-pointer items-center duration-500 ease-in-ease-out rounded-full`}>{socialmedia.icon}</div></Link>
 )
 )}
    </div>

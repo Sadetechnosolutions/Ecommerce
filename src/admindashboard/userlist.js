@@ -10,8 +10,13 @@ const UserList = () => {
 
     // Fetch user data
     const fetchUsers = async () => {
+        const token = localStorage.getItem('token')
         try {
-            const response = await axios.get('http://localhost:8081/api/auth/users/descending');
+            const response = await axios.get('http://localhost:8080/api/auth/users/descending',{
+                headers:{
+                    'Authorization': `Bearer ${token}`
+                }
+            });
             const usersData = response.data.map(user => ({
                 id: user.id,
                 UserName: user.name,
@@ -28,8 +33,13 @@ const UserList = () => {
 
     // Fetch OTP data
     const fetchOtps = async () => {
+        const token = localStorage.getItem('token')
         try {
-            const response = await axios.get('http://localhost:8081/api/auth/otps/descending');
+            const response = await axios.get('http://localhost:8080/api/auth/otps/descending',{
+                headers:{
+                    'Authorization':`Bearer ${token}`
+                }
+            });
             const otpsData = response.data.map(otp => ({
                 id: otp.id, // Ensure this matches the key in the OTP response that links to the user
                 Joined: otp.createdAt

@@ -17,12 +17,13 @@ const Phonecode = ({setFlag}) => {
   return (
     <>
     <div>
-    <div className='flex flex-col w-inherit py-2 gap-4 absolute text-left bg-white'>
+    <div className='flex flex-col w-5/6 py-2 gap-4 absolute text-left bg-white'>
     {country.map((countries) => (
-        <div onClick={()=>{setFlag(countries)}} key={countries.id} className='flex cursor-pointer bg-white px-2 items-center gap-2'>
+        <div onClick={()=>{setFlag(countries)}} key={countries.id} className='flex text-sm cursor-pointer bg-white px-2 items-center gap-2'>
             <img className='w-5 h-4' alt='' src={countries.flag} />
-            <div>{countries.name}</div>
             <div>{countries.code}</div>
+            <div>{countries.name}</div>
+
         </div>
     ))}
 </div>

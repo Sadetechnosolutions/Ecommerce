@@ -16,6 +16,12 @@ const Story = () => {
   const displayedUserIds = new Set();
   const userId = useSelector((state)=>state.auth.userId)
   const [profileUser,setProfileUser] = useState();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem("darkMode") === "true";
+    setIsDarkMode(savedMode);
+  }, []);
 
   const responsive = {
     0: { items: 2 },
@@ -26,7 +32,7 @@ const Story = () => {
 
   const renderNextButton = ({ isDisabled, onClick }) => (
     <button
-      className={`absolute p-2 flex hover:bg-cta text-cta hover:text-white items-center justify-center bg-gray-100 rounded-full top-44 right-4 ${story?.length === 0 ? 'hidden' : ''}`}
+      className={`absolute p-2 flex hover:bg-cta text-cta hover:text-white items-center justify-center  bg-gray-100 rounded-full top-44 right-4 ${story?.length === 0 ? 'hidden' : ''}`}
       onClick={onClick}
       disabled={isDisabled}
     >
@@ -35,8 +41,13 @@ const Story = () => {
   );
 
   const fetchUsers = async () => {
+    const token =  localStorage.getItem('token')
     try {
-      const response = await axios.get('http://localhost:8081/api/auth/users/descending');
+      const response = await axios.get('http://localhost:8080/api/auth/users/descending',{
+        headers:{
+          'Authorization':`Bearer ${token}`
+        }
+      });
       const usersData = response.data?.map(user => ({
         id: user.id,
         UserName: user.name,
@@ -96,8 +107,13 @@ const Story = () => {
   };
 
   const fetchProfileUser = async () => {
+    const token = localStorage.getItem('token')
     try {
-      const response = await fetch(`http://localhost:8080/api/users/${userId}`);
+      const response = await fetch(`http://localhost:8080/api/users/${userId}`,{
+        headers:{
+          'Authorization':`Bearer ${token}`
+        }
+      });
       const data = await response.json()
       setProfileUser(data);
     } catch (error) {
@@ -110,12 +126,12 @@ const Story = () => {
   }, []);
 
   return (
-    <div className='max-w-[30rem]  w-full px-2 shadow-lg rounded-md'>
+    <div className={`max-w-[30rem] ${isDarkMode? 'gray-bg' :'white-bg'}  w-full px-4 py-3 shadow-lg rounded-md`}>
 
-      <div className='flex items-center p-4 gap-4 max-w-[30rem] overflow-x-auto whitespace-nowrap scrollbar-hidden'>
- {   profileUser &&   <NavLink to='/uploadStory'> <div className='flex flex-col h-20 gap-1'>
+      <div className='flex items-center gap-4 max-w-[30rem] overflow-x-auto whitespace-nowrap scrollbar-hidden'>
+ {   profileUser &&   <NavLink to='/uploadStory'> <div className='flex flex-col gap-1'>
   <div className='relative'>
-          <img className='w-16 h-16 rounded-full' src={`http://localhost:8080/posts${profileUser.profileImagePath}`} />
+          <img className='w-16 h-16 rounded-full' src={`http://localhost:8080${profileUser.profileImagePath}`} />
           <span className='absolute bottom-0 right-0 w-4 flex items-center justify-center h-4 bg-cta rounded-full text-white'><Icon icon="ic:sharp-add" /></span>
           </div>
           {/* <span className='text-xs'>Add to Story</span> */}
@@ -127,8 +143,8 @@ const Story = () => {
 
           return (
             <div key={story.id} className='flex flex-col'>
-              <div onClick={() => { handleClick(story); openStory(); }} className='flex flex-col h-20 '>
-                <img className='w-16 h-16 rounded-full border-4 border-cta' src={`http://localhost:8080/posts${story.profileImagePath}`} alt={`Profile of ${story.userId}`} />
+              <div onClick={() => { handleClick(story); openStory(); }} className='flex flex-col '>
+                <img className='w-16 h-16 rounded-full border-4 border-cta' src={`http://localhost:8080${story.profileImagePath}`} alt={`Profile of ${story.userId}`} />
                 {users?.map(user => user.id === userId ? (
                   <div key={user.id} className=' flex justify-center text-xs items-center'>
                     {user.UserName}

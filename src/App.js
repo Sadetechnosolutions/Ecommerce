@@ -21,6 +21,14 @@ import MessageList from './pages/messagelist';
 import Chat from './pages/chat';
 import StoryUpload from './components/createstory';
 import Postinfo from './components/postDetails';
+import Birthday from './components/birthday';
+import Search from './components/search';
+import Weather from './components/weather';
+import Formbar from './components/formheader';
+import Reels from './components/reels';
+import DisplayReels from './pages/displayreels';
+import Profession from './components/profession';
+import Aboutus from './pages/professional';
 
 function App() {
   return (
@@ -43,9 +51,16 @@ function App() {
         <Route path='/friendrequest' element={<DefaultWithNavbar> <Friendrequest /></DefaultWithNavbar>}/>
         <Route path='/notifications' element={<DefaultWithNavbar> <Notifications /></DefaultWithNavbar>}/>
         <Route path='/messages' element={<DefaultWithNavbar> <MessageList /></DefaultWithNavbar>}/>
-        <Route path='/messages/:messageID' element={<DefaultWithNavbar><Chat /></DefaultWithNavbar>} />
+        <Route path='/messages/:messageID' element={<Chat />} />
         <Route path='/uploadStory' element={<StoryUpload />} />
         <Route path='/postinfo' element={<Postinfo />} />
+        <Route path='/birthdays' element={<DefaultWithNavbar><Birthday /></DefaultWithNavbar>} />
+        <Route path='/weather' element={<DefaultWithNavbar><Weather /></DefaultWithNavbar>} />
+        <Route path='/search' element={<DefaultWithNavbar><Search /></DefaultWithNavbar>} />
+        <Route path='/profiledetails' element={<Formbar />} />
+        <Route path='/reels' element={<Reels />} />
+        <Route path='/Reels/:userID' element={<DisplayReels />} />
+        <Route path='/profession/:userID' element={<Aboutus />} />
       </Routes>
     </Router>
     </>

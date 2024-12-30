@@ -3,7 +3,7 @@ import { Icon } from '@iconify/react/dist/iconify.js';
 import { selectPost,removeSelected } from '../slices/postslice';
 import { useDispatch, useSelector } from 'react-redux';
 import InputEmoji from 'react-input-emoji';
-import MapSelector from './mapselector';
+
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -18,7 +18,12 @@ const Createpost = () => {
   const [user,setUser] = useState()
   const [description,setDescription] = useState('')
   const userId = useSelector((state) => state.auth.userId);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
+  useEffect(() => {
+    const savedMode = localStorage.getItem("darkMode") === "true";
+    setIsDarkMode(savedMode);
+  }, []);
 
 
 
@@ -32,10 +37,7 @@ const Createpost = () => {
     return null;
   };
 
-  const handleSelectLocation = (location) => {
-    setSelectedLocation(location);
-    setShowMap(false); // Close the map after selecting the location
-  };
+
 
   const handleSubmit = async (event) => {
     if (!file && !description) {
@@ -72,11 +74,14 @@ const Createpost = () => {
     for (let [key, value] of formDataObj.entries()) {
       console.log(`${key}:`, value);
     }
-
+    const token = localStorage.getItem('token')
     try {
       const response = await fetch('http://localhost:8080/posts', {
         method: 'POST',
         body: formDataObj,
+        headers:{
+          'Authorization':`Bearer ${token}`
+        }
       });
 
       if (response.ok) {
@@ -98,11 +103,12 @@ const Createpost = () => {
   };
 
   const fetchUserDetails = async () => {
+    const token = localStorage.getItem('token')
     try {
       const response = await axios.get(`http://localhost:8080/api/users/${userId}`, {
         method: 'GET',
         headers: {
-    
+        'Authorization':`Bearer ${token}`
         },
       });
       setUser(response.data);
@@ -120,10 +126,10 @@ const Createpost = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className='max-w-[30rem] w-full bg-white rounded-md px-6 flex gap-2 flex-col shadow-lg'>
+    <form onSubmit={handleSubmit} className={`max-w-[30rem] w-full ${isDarkMode? 'gray-bg' : 'white-bg' } px-4 py-4 rounded-md flex gap-2 flex-col shadow-lg`}>
       <div className='w-full flex items-center gap-2'>
-      <img className='w-9 h-9 rounded-full' src={`http://localhost:8080/posts${user?.profileImagePath}`} alt='' />
-      <textarea onClick={handlePost} className='w-full p-2 border border-gray-600 rounded-md'
+      <img className='w-9 h-9 rounded-full' src={`http://localhost:8080${user?.profileImagePath}`} alt='' />
+      <textarea onClick={handlePost} className={`w-full p-2 ${isDarkMode? 'lightgray-bg border-none' : 'white-bg border border-gray-300' } focus:outline-none rounded-md`}
         value={description}
         onChange={setDescription} // Update description state
         placeholder='Write something..'
@@ -150,12 +156,7 @@ const Createpost = () => {
         ))}
       </div> */}
       <div>{renderMedia()}</div>
-      {showMap && (
-        <MapSelector
-          onSelectLocation={handleSelectLocation}
-          onClose={() => setShowMap(false)}
-        />
-      )}
+
       {/* <button type='submit' className='bg-cta p-2 cursor-pointer text-white text-sm font-semibold rounded-md'>
         Post
       </button> */}

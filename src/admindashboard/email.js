@@ -8,8 +8,13 @@ const Email = () => {
     const [otps, setOtps] = useState([]);
 
     const fetchUsers = async () => {
+        
         try {
-            const response = await axios.get('http://localhost:8081/api/auth/users/descending');
+            const response = await axios.get('http://localhost:8080/api/auth/users/descending',{
+                headers:{
+                    'Authorization':`Bearer ${token}`
+                }
+            });
             const usersData = response.data.map(user => ({
                 id: user.id,
                 UserName: user.name,
@@ -26,7 +31,11 @@ const Email = () => {
 
     const fetchOtps = async () => {
         try {
-            const response = await axios.get('http://localhost:8081/api/auth/otps/descending');
+            const response = await axios.get('http://localhost:8080/api/auth/otps/descending',{
+                headers:{
+                    'Authorization':`Bearer ${token}`
+                }
+            });
             const otpsData = response.data.map(otp => ({
                 id: otp.id, 
                 Otp:otp.otp,

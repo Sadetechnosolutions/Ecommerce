@@ -58,10 +58,10 @@ const Signup = () => {
     try {
       const formattedPhoneNumber = country ? `${country.code}${user.phoneNumber}` : `+91${user.phoneNumber}`;
       const formattedOTP = otp.join('')
-      const userdata = { ...user, phoneNumber: formattedPhoneNumber, role: 'USER' ,otp:formattedOTP };
+      const userdata = { ...user, phoneNumber: formattedPhoneNumber ,otp:formattedOTP };
       console.log(formattedOTP)
       console.log('Sending data:', JSON.stringify(userdata));
-      const response = await fetch('http://localhost:8081/api/auth/verifyOtp', {
+      const response = await fetch('http://localhost:8080/api/auth/verifyOtp', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -108,7 +108,7 @@ const Signup = () => {
       const formattedPhoneNumber = country ? `${country.code}${user.phoneNumber}` : `+91${user.phoneNumber}`;
       const userdata = { ...user, phoneNumber: formattedPhoneNumber, role: 'USER' };
       console.log('Sending data:', JSON.stringify(userdata));
-      const response = await fetch('http://localhost:8081/api/auth/register', {
+      const response = await fetch('http://localhost:8080/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -243,8 +243,8 @@ const Signup = () => {
         </div>
 
       </div>
-<div className='flex items-center justify-center'>
-      <form onSubmit={handleSubmit} className="flex flex-col text-xs bg-white rounded-md justify-center items-center px-4 py-4">
+<div className='flex items-center justify-center w-full'>
+      <form onSubmit={handleSubmit} className="flex flex-col w-5/6 text-xs bg-white rounded-md justify-center items-center px-4 py-4">
         {/* <div className="flex w-full mt-2 md:w-3/6 justify-center relative text-center gap-3 mb-4">
         <div className='flex items-center gap-1'>
           <div className="flex items-center gap-1">

@@ -10,7 +10,6 @@ import { NavLink } from 'react-router-dom'
 import { useParams } from 'react-router-dom'
 import { selectPost } from '../slices/postslice';
 
-
 const Photos = () => {
   const [uploadPhoto, showuploadPhoto] = useState(false);
   const [postPhoto,showPost] = useState(false);
@@ -20,7 +19,13 @@ const Photos = () => {
   const [file, setFile] = useState(null);
   const [likeCount,setLikeCount] = useState({});
   const [like,setLike] = useState(false);
-  
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem("darkMode") === "true";
+    setIsDarkMode(savedMode);
+  }, []);
+
   const openCreateAlbum = ()=>{
     showCreateAlbum(true);
     closeuploadPhoto()
@@ -70,9 +75,15 @@ const Photos = () => {
       console.error('Error fetching likes:', error);
     }
   },[like,userId]);
-  const likesCount = async (postId) => {
+
+  const likesCount = useCallback(async (postId) => {
+    const token = localStorage.getItem('token')
     try {
-      const response = await fetch(`http://localhost:8080/likes/post/${postId}/count`);
+      const response = await fetch(`http://localhost:8080/likes/post/${postId}/count`,{
+        headers:{
+          'Authorization':`Bearer ${token}`
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         setLikeCount(prevCounts => ({
@@ -83,9 +94,7 @@ const Photos = () => {
     } catch (error) {
       console.error('Error fetching like count:', error);
     }
-  };
-
-
+  },[likeCount]);
 
   const openuploadPhoto = () => {
     showuploadPhoto(true);
@@ -130,16 +139,17 @@ const Photos = () => {
     if (images?.length > 0) {
       images.forEach(post => {
         if (post.postId) {
-          fetchLikes(post.postId); // Fetch likes for each post
-          likesCount(post.postId); // Fetch like counts for each post
+          fetchLikes(post.postId);  // Fetch if user has liked the post
+          likesCount(post.postId);  // Fetch total likes count for the post
         }
       });
     }
-  }, [images,fetchLikes]);
+  }, []);
+  
   
   useEffect(() => {
       fetchImage();
-  },[fetchImage]);
+  },[]);
   
             const handleImageChange = (event) => {
               const selectedFile = event.target.files[0];
@@ -160,7 +170,7 @@ const Photos = () => {
             };
   return (
     <>
-    <div className='max-w-[30rem] w-full'>
+    <div className={`max-w-[30rem] ${isDarkMode? 'gray-bg' : 'white-bg'} w-full`}>
     <Modal appElement={document.getElementById('root')}
     style={{
         content: {
@@ -177,7 +187,7 @@ const Photos = () => {
           border:'none'
         },}}
   isOpen={uploadPhoto} onRequestClose={closeuploadPhoto}>
-        <div className='flex max-w-[28rem] w-full bg-white rounded-md items-center justify-center'>
+        <div className='flex max-w-[28rem] w-full rounded-md items-center justify-center'>
       <div className=' w-full flex flex-col p-4 gap-4 shadow-lg rounded-md'>
         <div className='flex justify-between px-6 py-2 items-center justify-center'><span className='font-semibold text-lg'>Upload</span><div onClick={closeuploadPhoto} className='cursor-pointer bg-gray-200 p-1 hover:bg-red hover:text-white rounded-full'><IoClose className='h-5 w-5 cursor-pointer'/></div></div>
         <div className='w-full h-full flex flex-col items-center gap-6 justify-center'>
@@ -245,10 +255,10 @@ const Photos = () => {
  isOpen={createAlbum} onRequestClose={closePopups} >
   <Createalbum close={closePopups} />
   </Modal>
-        <div className='flex flex-col py-2 drop '>
+        <div className='flex flex-col px-3 py-2 drop '>
         <div className='font-semibold text-lg p-4'>Photos ({images?.length})</div>
         <div className='flex flex-wrap p-2 gap-2'>
-          {parseInt(userID) === userId && <div onClick={openuploadPhoto} className='w-28 h-28 flex bg-gray-50 cursor-pointer items-center justify-center'>
+          {parseInt(userID) === userId && <div onClick={openuploadPhoto} className={`w-28 h-28 flex rounded-lg ${isDarkMode? 'lightgray-bg' : 'bg-gray-50'}  cursor-pointer items-center justify-center`}>
           <label className='cursor-pointer'>
           <span className='flex flex-col items-center gap-2'><Icon className='text-cta' icon="zondicons:add-solid" width="1.2em" height="1.2em"   />Upload</span>
           </label>
@@ -258,7 +268,7 @@ const Photos = () => {
           <div key={photo.postId} className='inline-block cursor-pointer relative overflow-hidden'>
   <NavLink to={`/post/${userID}/${photo.postId}`}>
   <div className='relative cursor-pointer'>
-  <img className='w-28 h-28 rounded-lg' src={`http://localhost:8080/posts${photo.imageUrl}`} alt={`http://localhost:8080/posts${photo.imageUrl}`} />
+  <img className='w-28 h-28 rounded-lg' src={`http://localhost:8080${photo.imageUrl}`} alt={`http://localhost:8080${photo.imageUrl}`} />
     <div className="absolute inset-0 bg-black opacity-0 transition-opacity duration-300 hover:opacity-80 rounded-lg flex items-center justify-center">
     <p className="text-white flex items-center justify-center gap-2 md:w-full i know an assassin when i see one unmaiyana miso kellam free pass kudutharrathu namma hypocrisy ah question panna label ottidrathu paaka azhaga irukka nu tha mannichu vidren avan varamaatan di yaaru pa athu crowd uh enakku therinjavangala achum yarna maati tholaingalen da ithu mattu enga meera ka ku therinjuthu rocket raja oru thirudan ah whats a crocodile doing in perungalathur ethayachum sollu ya w-40 md:text-lg font-semibold"> <Icon className='text-cta' icon="ph:heart-fill" width="1.4em" height="1.4em" />{likeCount[photo.postId] || 0} </p>
     </div>

@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { setFormData,resetFormData } from "../slices/formslice";
 import moment from 'moment';
 import { useNavigate } from "react-router";
+import axios from "axios";
 
 const GeneralInfo = ({section}) => {
     const navigate = useNavigate();
@@ -19,6 +20,7 @@ const GeneralInfo = ({section}) => {
     const token = localStorage.getItem('token'); 
     const [interest, setInterest] = useState('');
     const [showAdditionalExperience, setshowAdditionalExperience] = useState(false);
+    const [user,SetUser] = useState()
 
 
     const deleteInterest = (id) => {
@@ -71,90 +73,95 @@ const GeneralInfo = ({section}) => {
     const removeIds = (arr) => arr.map(({ id, ...rest }) => rest);
 
 
-const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    // Format the current date using moment
-    const currentDate = moment().format('YYYY-MM-DD');
-
-    // Create a FormData object for the file uploads and form data
-    const formDataObj = new FormData();
-
-    // Create userJson as a JSON string
-    const userJson = {
-        name: formData.displayName || '',
-        aboutMe: formData.aboutYourself || '',
-        birthday: formData.birthday 
-            ? moment(formData.birthday).format('YYYY-MM-DD') 
-            : '',
-        phno: `${formData.countryCode || '+91'}${formData.phno || ''}`,
-        bloodGroup: formData.bloodGroup || '',
-        gender: formData.gender || '',
-        country: formData.country || '',
-        occupation: formData.profession || '',
-        joined: currentDate,
-        userid: userId,
-        email: formData.gmail || '',
-        hobbies: formData.hobbies || '',
-        education: formData.education || '',
-        interests: removeIds(formData.interests || []),
-        workExperience: formData.workExperience || [],
-        socialMediaLinks: formData.socialMediaLinks || {}
-    };
-
-    // Append userJson as a JSON string
-    formDataObj.append('userJson', JSON.stringify(userJson));
-
-    // Append profile and banner images if available
-    if (profilepic) {
-        formDataObj.append('profileImage', profilepic);
-    }
-    if (coverpic) {
-        formDataObj.append('bannerImage', coverpic);
-    }
-
-    // Log the FormData object for debugging
-    // Note: You can't log FormData object directly; instead, use this method:
-    for (let [key, value] of formDataObj.entries()) {
-        console.log(`${key}:`, value);
-    }
-
-    try {
-        const response = await fetch('http://localhost:8082/api/users/createUserWithImages', {
-            method: 'POST',
-            body: formDataObj,
-        });
-        dispatch(resetFormData());
-        if (response.ok) {
-            dispatch(resetFormData());
-            const data = await response.json();
-            console.log('API Response Data:', data); // Log the response for debugging
-            navigate('/newsfeed')
-            return data.ourUsers;
-        } else {
-            // Log detailed error message
-            const errorText = await response.text();
-            console.error('Error:', response.status, errorText);
-            return null;
-            navigate('/newsfeed')
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+    
+        // Format the current date using moment
+        const currentDate = moment().toISOString();
+    
+        // Create a FormData object for the file uploads and form data
+        const formDataObj = new FormData();
+    
+        // Create userJson as a JSON string
+        const userJson = {
+            name: formData.displayName || '',
+            aboutMe: formData.aboutYourself || '',
+            birthday: formData.birthday 
+                ? moment(formData.birthday).format('YYYY-MM-DD') 
+                : '',
+                // `${formData.countryCode || '+91'}
+            phno: formData.phno || '',
+            bloodGroup: formData.bloodGroup || '',
+            gender: formData.gender || '',
+            country: formData.country || '',
+            occupation: formData.profession || '',
+            joined: currentDate,
+            // userid: null,    
+            email: formData.gmail || '',
+            hobbies: formData.hobbies || '',
+            education: formData.education || '',
+            interests: removeIds(formData.interests || []),
+            workExperience: formData.workExperience || [],
+            socialMediaLinks: formData.socialMediaLinks || {}
+        };
+    
+        // Append userJson as a JSON string
+        formDataObj.append('userJson', JSON.stringify(userJson));
+    
+        // Append profile and banner images if available
+        if (profilepic) {
+            formDataObj.append('profileImage', profilepic);
         }
-    } catch (error) {
-        console.error('Error:', error);
-        navigate('/newsfeed')
-        return null;
-    }
-};
+    
+        if (coverpic) {
+            formDataObj.append('bannerImage', coverpic);
+        }
+    
+        // Note: You can't log FormData object directly; instead, use this method:
+        for (let [key, value] of formDataObj.entries()) {
+            console.log(`${key}:`, value);
+        }
+    
+        const token = localStorage.getItem('token');
+    
+        try {
+            const response = await axios.post('http://localhost:8080/api/users/createUserWithImages', formDataObj, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data', // This ensures the server knows you're sending FormData
+                }
+            });
+    
+            dispatch(resetFormData());
+            
+            // If the response is successful, navigate and return the users data
+            if (response.status === 200) {
+                console.log('API Response Data:', response.data); // Log the response for debugging
+                navigate('/newsfeed');
+                return response.data.ourUsers;
+            } else {
+                // Handle errors if response is not OK
+                console.error('Error:', response.status, response.data);
+                return null;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            console.error('Error details:', JSON.stringify(error, null, 2));
+            return null;
+        }
+    };
 
     const maxLengthCheck = (object) => {
         if (object.target.value.length > object.target.maxLength) {
          object.target.value = object.target.value.slice(0, object.target.maxLength)
           }
         }
+            
 
-
+        http://localhost:8080/api/auth/adminuser/get-profile
     return (
-        <div className="h-[58rem] items-center flex justify-center">
-            <form onSubmit={handleSubmit} className="relative w-1/2 h-[55rem] px-8 py-4 rounded-lg flex bg-white flex-col gap-4">
+        <div className="items-center flex justify-center">
+            <form onSubmit={handleSubmit} className="relative w-full px-8 py-4  flex bg-formbg flex-col gap-4">
                 <div className="flex flex-col w-full justify-content gap-4">
 
                     <div className="flex flex-col gap-2">
@@ -163,7 +170,7 @@ const handleSubmit = async (event) => {
                             id='hobbies'
                             type="text"
                             onChange={handleChange}
-                            className="border border-gray-600 border-b p-2 rounded-md"
+                            className="placeholder:text-sm text-sm focus:outline-cta bg-white border p-2 rounded-md"
                             name="hobbies"
                             placeholder="Enter your Hobbies"
                             value={formData.hobbies}
@@ -177,18 +184,18 @@ const handleSubmit = async (event) => {
                                 id='interest'
                                 value={interest}
                                 onChange={(e) => { setInterest(e.target.value) }}
-                                className='px-3 py-2 text-sm border-gray-600 border border-b w-full rounded-md'
+                                className='px-3 py-2 text-sm placeholder:text-sm text-sm focus:outline-cta bg-white border border-b w-full rounded-md'
                                 type='text'
                                 placeholder='What are your interests'
                             />
                             <button
                                 type='button'
-                                className='border rounded-md text-cta hover:bg-cta hover:text-white px-6 py-2 border-cta'
+                                className='border rounded-md text-cta flex items-center bg-cta text-white px-2 py-2 border-cta'
                                 onClick={(e) => {
                                     e.preventDefault();
                                     addInterest();
                                 }}
-                            >
+                            > <Icon icon="ic:baseline-add" />
                                 Add
                             </button>
                         </div>
@@ -214,7 +221,7 @@ const handleSubmit = async (event) => {
                                     id='education'
                                     value={formData.education}
                                     onChange={handleChange}
-                                    className="border border-b border-gray-600 p-2 rounded-md"
+                                    className="border placeholder:text-sm text-sm focus:outline-cta bg-white p-2 rounded-md"
                                     name='education'
                                     placeholder="University"
                                 />
@@ -232,7 +239,7 @@ const handleSubmit = async (event) => {
                                     id={`workExperience-${index}-work`}
                                     value={work.work}
                                     onChange={handleChange}
-                                    className="border border-b w-1/2 border-gray-600 p-2 rounded-md"
+                                    className="borderplaceholder:text-sm border text-sm focus:outline-cta bg-white w-1/2 p-2 rounded-md"
                                     name={`workExperience-${index}-work`}
                                     placeholder="Profession"
                                 />
@@ -243,7 +250,7 @@ const handleSubmit = async (event) => {
                                     onInput={maxLengthCheck}
                                     value={work.experience}
                                     onChange={handleChange}
-                                    className="border border-b w-1/2 border-gray-600 p-2 rounded-md"
+                                    className="border placeholder:text-sm text-sm focus:outline-cta bg-white  w-1/2 p-2 rounded-md"
                                     name={`workExperience-${index}-experience`}
                                     placeholder="Years of Experience"
                                 />
@@ -257,7 +264,7 @@ const handleSubmit = async (event) => {
     <input
       id='facebook'
       onChange={handleChange}
-      className="border w-full border-b border-gray-600 py-2 px-9 rounded-md focus:outline-none"
+      className="border w-full placeholder:text-sm text-sm focus:outline-cta bg-white py-2 px-9 rounded-md"
       name="socialMediaLinks-facebook"
       placeholder="Facebook"
       value={formData.socialMediaLinks.facebook}
@@ -268,7 +275,7 @@ const handleSubmit = async (event) => {
     <input
       id='instagram'
       onChange={handleChange}
-      className="border w-full border-b py-2 px-9 border-gray-600 rounded-md focus:outline-none"
+      className="border w-full placeholder:text-sm text-sm focus:outline-cta bg-white  py-2 px-9 rounded-md"
       name="socialMediaLinks-instagram"
       placeholder="Instagram"
       value={formData.socialMediaLinks.instagram}
@@ -279,7 +286,7 @@ const handleSubmit = async (event) => {
     <input
       id='twitter'
       onChange={handleChange}
-      className="border w-full border-b py-2 px-9 border-gray-600 rounded-md focus:outline-none"
+      className="border w-full py-2 px-9 placeholder:text-sm text-sm focus:outline-cta bg-white rounded-md"
       name="socialMediaLinks-twitter"
       placeholder="Twitter"
       value={formData.socialMediaLinks.twitter}
@@ -290,7 +297,7 @@ const handleSubmit = async (event) => {
     <input
       id='youtube'
       onChange={handleChange}
-      className="border w-full border-b py-2 px-9 border-gray-600 rounded-md focus:outline-none"
+      className="border w-full  py-2 px-9 placeholder:text-sm text-sm focus:outline-cta bg-white rounded-md "
       name="socialMediaLinks-youtube"
       placeholder="Youtube"
       value={formData.socialMediaLinks.youtube}
@@ -301,7 +308,7 @@ const handleSubmit = async (event) => {
     <input
       id='linkedin'
       onChange={handleChange}
-      className="border w-full border-b py-2 px-9 border-gray-600 rounded-md focus:outline-none"
+      className="border w-full placeholder:text-sm text-sm focus:outline-cta bg-white py-2 px-9 rounded-md "
       name="socialMediaLinks-linkedin"
       placeholder="linkedin"
       value={formData.socialMediaLinks.linkedin}
@@ -311,66 +318,12 @@ const handleSubmit = async (event) => {
 </div>
                 </div>
                 <ToastContainer />
-                <div className="relative px-8 py-6 w-full flex bottom-0 right-0 items-center justify-between">
-                    <button type="submit" className="absolute right-0 px-3 py-1.5 border rounded-md border-cta text-lg bg-cta hover:opacity-75 text-white cursor-pointer">Submit</button>
-                </div>
+
+                    <button type="submit" className="fixed bottom-6 right-6 px-3 py-3 border rounded-full border-cta text-lg bg-cta hover:opacity-75 text-white cursor-pointer"><Icon icon="charm:tick" /></button>
+             
             </form>
         </div>
     );
 }
 
 export default GeneralInfo;
-
-// // {
-//     "name": "Sreeman R",
-//    "aboutMe": "Lives in chennai",
-//    "birthday": "18-06-2001",
-//    "phno": "+919785462102",
-//    "bloodGroup": "A+ve",
-//    "gender": "Male",
-//    "country": "India",
-// //     "occupation": "Cinematographer",
-// //     "joined": "2021-12-20",
-// // "userid":3,
-// //     "email": "peterparker07@design.com",
-// //     "hobbies": "I like to ride the bicycle, swimming, and working out. I also like reading design magazines, and searching on internet, and also binge watching a good hollywood Movies while it’s raining outside.",
-// //     "education": "Master of computer science, sixteen years degree From Oxford Uniersity, London",
-// //     "interests": [
-// //         {"activity": "Swimming"},
-// //         {"activity": "Photography"},
-// //         {"activity": "Street Art"},
-// //         {"activity": "Anime"},
-// //         {"activity": "Music"}
-// //     ],
-// //     "workExperience": [
-// //         {"work": "Assistant Cinematographer", "experience": "Assisted in camera setup and various operations"},
-// //         {"work": "Cinematographer", "experience": "Camera operations for production, shot division decisions and ensuring high quality visuals"}
-// //     ],
-// //  "socialMediaLinks": {
-           
-// //             "twitter": "@john_doe",
-// //             "instagram": "@john_doe",
-// //             "facebook": "john.doe",
-// //             "youtube": "john.doe",
-// //             "linkedin": "john-doe"
-// //         }
-// // }
-
-// {
-// "name": "Sreeman R",
-// "aboutMe": "Lives in chennai",
-// "birthday": "2001-06-18",
-// "phno": "+919785462102",
-// "bloodGroup": "A+ve",
-// "gender": "Male",
-// "country": "India",
-// "occupation": "Developer",
-// "joined": "2024-08-07",
-// "userid": 4,
-// "email": "sreemanvk@gmail.com",
-// "hobbies": "i play cricket",
-// "education": "Bsc Computer Science, SNMV, 2021",
-// "interests": [{"activity":"football"},{"activity":"anime"}],
-// "workExperience": [{"work":"developer","experience":"1"}],
-// "socialMediaLinks": {"facebook":"https://www.facebook.com/","instagram":"https://www.instagram.com/","twitter":"https://www.x.com/","youtube":"https://www.youtube.com/","linkedin":"https://www.linkedin.com/"}
-// }

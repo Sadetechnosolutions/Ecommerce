@@ -1,0 +1,15 @@
+
+
+  .container {
+    background-color: pink;
+  }
+  
+  .barCompleted {
+    background-color: lightblue;
+    width: 80%;
+  }
+  
+  .label {
+    font-size: 20px;
+    color: green;
+  }

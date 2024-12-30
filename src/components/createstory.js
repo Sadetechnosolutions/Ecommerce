@@ -47,9 +47,10 @@ const StoryUpload = ()=>{
              method:'POST',
              body:formData,
              headers:{
-                'Authorization':`bearer${token}`,
+                'Authorization':`Bearer ${token}`,
              }
             })
+
             if(response.ok){
                 dispatch(updateStory(null))
                 handleroute()
